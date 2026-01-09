@@ -12,21 +12,13 @@ public static class FormationResolver
     /// </summary>
     private static readonly Dictionary<FormationType, IFormation>  _strategies = new();
     
+    
     /// <summary>
     /// 初始化所有策略
     /// </summary>
     static FormationResolver()
     {
-        var types = Assembly.GetExecutingAssembly()
-                                    .GetTypes()
-                                    .Where(t => t.IsAssignableTo(typeof(IFormation)) && !t.IsAbstract && !t.IsInterface);
-        foreach (var type in types)
-        {
-            if (type.GetCustomAttribute<FormationStrategyAttribute>() is { } strategy)
-            {
-                _strategies[strategy.Type] = (IFormation)Activator.CreateInstance(type)!;
-            }
-        }
+        _strategies = AttributeHelper.Strategies;
     }
     
     /// <summary>

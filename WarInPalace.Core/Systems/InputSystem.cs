@@ -24,19 +24,18 @@ public class InputSystem:BaseSystem
     public override void Update(float deltaTime)
     {
         var input = InputState.Instance;
-        if (input.IsRightMousePressed)
+        if (!input.IsMoveActive) return;
+        input.IsMoveActive = false;
+        var formation = FormationResolver.Get(FormationType.Rectangle);
+        var pos = input.MousePosition;
+        using var generator = formation.Spawn(pos, spacing:70).GetEnumerator();
+        generator.MoveNext();
+        GameWorld.Query(in _queryDescription, (ref Position position, ref Destination targetPos) =>
         {
-            var formation = FormationResolver.Get(FormationType.Spiral);
-            var pos = input.MousePosition;
-            using var generator = formation.Spawn(pos, spacing:40).GetEnumerator();
+            targetPos.Value = generator.Current;
+            targetPos.IsActive = true;
             generator.MoveNext();
-            GameWorld.Query(in _queryDescription, (ref Position position, ref Destination targetPos) =>
-            {
-                targetPos.Value = generator.Current;
-                targetPos.IsActive = true;
-                generator.MoveNext();
-            });
-            input.IsRightMousePressed = false;
-        }
+        });
+
     }
 }

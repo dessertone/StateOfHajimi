@@ -56,7 +56,7 @@ public class SpatialGrid
         var (r, c) = GetCellKey(pos);
         var start = 0 - size / 2;
         // 遍历周围 size * size 的网格
-        for (var col = 0; col < start + size; ++col)
+        for (var col = start; col < start + size; ++col)
         {
             for (var row = start; row < start + size; ++row)
             {

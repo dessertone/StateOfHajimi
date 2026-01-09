@@ -13,6 +13,7 @@ public class InputState
     public Vector2 MousePosition { get; set; }
     
     public bool IsRightMousePressed { get; set; }
+    public bool IsMoveActive { get; set; }
     
     public Vector2 DragStartPosition { get; set; }
     

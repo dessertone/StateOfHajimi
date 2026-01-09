@@ -14,6 +14,8 @@ public class AvoidanceSystem : BaseSystem
         .WithAll<BodyCollider, Position, Velocity>();
     
     private static readonly SpatialGrid _spatialGrid = SpatialGrid.Instance; 
+    
+    private const float Epsilon = 0.1f;
 
     public AvoidanceSystem(World world) : base(world)
     {
@@ -21,13 +23,12 @@ public class AvoidanceSystem : BaseSystem
 
     public override void Update(float deltaTime)
     {
-
         GameWorld.Query(in _avoidanceQuery, (Entity curEntity, ref BodyCollider c, ref Position p, ref Velocity v) =>
         {
             if (c.Type == BodyType.AABB) return;
 
-            Vector2 separationForce = Vector2.Zero;
-            int contactCount = 0;
+            var avoidanceNormalSum = Vector2.Zero;
+            var contactCount = 0;
 
             foreach (var otherEntity in _spatialGrid.Retrieve(p.Value))
             {
@@ -40,31 +41,28 @@ public class AvoidanceSystem : BaseSystem
                     p.Value, c, 
                     otherPos.Value, otherCol
                 );
-
+                
                 if (!result.HasCollision) continue;
-                // 使用相对速度
-                var otherVelVec = Vector2.Zero;
-                if (otherEntity.Has<Velocity>()) otherVelVec = otherEntity.Get<Velocity>().Value;
+                if (result.Penetration < Epsilon) continue;
                 
-                var relativeVelocity = v.Value - otherVelVec;
+                var baseWeight = otherCol.AvoidanceForce;
+                var weight = baseWeight * (1.0f + result.Penetration);
 
-                // 用投影判断是否在远离
-                var velAlongNormal = Vector2.Dot(relativeVelocity, result.Normal);
-
-                // 抵消垂直切线方向的力
-                if (velAlongNormal < 0)
-                {
-                    v.Value -= result.Normal * velAlongNormal;
-                }
-                
-                // 离得越近排斥力越大
-                separationForce += result.Normal * (result.Penetration * otherCol.AvoidanceForce);
-                    
+                avoidanceNormalSum += result.Normal * weight;
                 contactCount++;
             } 
+
             if (contactCount > 0)
             {
-                v.Value += separationForce * deltaTime;
+                var avgNormal = Vector2.Normalize(avoidanceNormalSum);
+
+                var velocityProjected = Vector2.Dot(v.Value, avgNormal);
+
+                if (velocityProjected < 0)
+                {
+                    v.Value -= avgNormal * velocityProjected;
+                    // v.Value *= 0.95f; 
+                }
             }
         });
     }

@@ -2,7 +2,8 @@
 
 public enum TileType
 {
-    Ground = 0,
-    Wall = 1,
-    Water = 2,
+    Grass = 0,
+    Dirt = 1,
+    Wall = 2,
+    Water = 3,
 }

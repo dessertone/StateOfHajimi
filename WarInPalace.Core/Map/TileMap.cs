@@ -7,12 +7,12 @@ public class TileMap
 {
     public int Width { get;}
     public int Height { get;}
-    public float TileSize { get; }
+    public int TileSize { get; }
 
     public readonly TileType[] _tiles;
 
     private bool IsValid(int x, int y) => x >= 0 && x < Width && y >= 0 && y < Height;
-    public TileMap(int width, int height, float tileSize)
+    public TileMap(int width, int height, int tileSize)
     {
         Width = width;
         Height = height;

@@ -20,7 +20,6 @@ public class NavigationSystem: BaseSystem
             
             if (!dest.IsActive ) 
             {
-                v.Value = Vector2.Zero;
                 return;
             }
             var dir = dest.Value - p.Value;

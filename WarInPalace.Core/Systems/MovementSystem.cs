@@ -6,7 +6,8 @@ namespace WarInPalace.Core.Systems;
 
 public class MovementSystem:BaseSystem
 {
-    private static readonly QueryDescription _movementQuery = new QueryDescription().WithAll<Position, Velocity>();
+    private static readonly QueryDescription _movementQuery = new QueryDescription()
+        .WithAll<Position, Velocity>();
 
 
     public MovementSystem(World world) : base(world)
