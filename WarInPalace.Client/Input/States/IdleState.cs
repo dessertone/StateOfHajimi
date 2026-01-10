@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Serilog;
 using WarInPalace.Client.Input.Core;
 using WarInPalace.Core.Input;
+using WarInPalace.Core.Input.Commands;
 
 namespace WarInPalace.Client.Input.States;
 

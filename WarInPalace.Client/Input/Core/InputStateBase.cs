@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Avalonia.Input;
 using HarfBuzzSharp;
+using WarInPalace.Core.Input;
 
 namespace WarInPalace.Client.Input.Core;
 

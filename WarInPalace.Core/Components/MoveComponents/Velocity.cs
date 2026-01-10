@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace WarInPalace.Core.Components;
+namespace WarInPalace.Core.Components.MoveComponents;
 
 /// <summary>
 /// 对象实际移动的矢量

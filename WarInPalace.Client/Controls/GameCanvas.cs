@@ -19,7 +19,7 @@ using WarInPalace.Client.Input.States;
 using WarInPalace.Client.Models.Enums;
 using WarInPalace.Client.Utils;
 using WarInPalace.Core;
-using WarInPalace.Core.Components;
+using WarInPalace.Core.Components.MoveComponents;
 using WarInPalace.Core.Components.Tags;
 using WarInPalace.Core.Data;
 using WarInPalace.Core.Enums;

@@ -1,11 +1,7 @@
 ﻿using System.Numerics;
 using WarInPalace.Core.Enums;
 
-namespace WarInPalace.Core.Components;
-
-
-
-
+namespace WarInPalace.Core.Components.MoveComponents;
 
 public struct BodyCollider
 {

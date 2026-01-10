@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Numerics;
 using Arch.LowLevel;
-using WarInPalace.Client.Input;
+using WarInPalace.Core.Input.Commands;
 
 namespace WarInPalace.Core.Input;
 

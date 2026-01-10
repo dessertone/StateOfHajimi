@@ -3,6 +3,7 @@ using System.Numerics;
 using Arch.Core;
 using Arch.Core.Extensions;
 using WarInPalace.Core.Components;
+using WarInPalace.Core.Components.MoveComponents;
 using WarInPalace.Core.Enums;
 using WarInPalace.Core.Utils;
 

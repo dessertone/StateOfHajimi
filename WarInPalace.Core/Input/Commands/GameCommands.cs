@@ -1,4 +1,4 @@
-﻿namespace WarInPalace.Core.Input;
+﻿namespace WarInPalace.Core.Input.Commands;
 
 public abstract record GameCommand()
 {

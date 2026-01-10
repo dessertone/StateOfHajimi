@@ -1,13 +1,10 @@
-﻿using System;
-using System.Resources;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Input;
 using Serilog;
 using WarInPalace.Client.Input.Core;
-using WarInPalace.Client.Input.States;
-using WarInPalace.Core.Input;
+using WarInPalace.Core.Input.Commands;
 
-namespace WarInPalace.Client.Input;
+namespace WarInPalace.Client.Input.States;
 
 public class SelectState: InputStateBase
 {

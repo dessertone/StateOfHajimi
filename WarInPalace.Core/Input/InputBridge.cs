@@ -1,9 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Numerics;
-using WarInPalace.Core.Input;
+using WarInPalace.Core.Input.Commands;
 
-namespace WarInPalace.Client.Input;
+namespace WarInPalace.Core.Input;
 
 public class InputBridge
 {

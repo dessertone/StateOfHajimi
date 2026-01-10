@@ -1,11 +1,9 @@
 ﻿using System.Numerics;
 using Avalonia;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using WarInPalace.Client.Input.Core;
-using WarInPalace.Client.Input.States;
 
-namespace WarInPalace.Client.Input;
+namespace WarInPalace.Client.Input.States;
 
 public class PanState: InputStateBase
 {

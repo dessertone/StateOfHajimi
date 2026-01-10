@@ -1,10 +1,14 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices.Marshalling;
 using Arch.Core;
-using WarInPalace.Client.Input;
 using WarInPalace.Core.Components;
 using WarInPalace.Core.Components.PathComponents;
+using WarInPalace.Core.Components.MoveComponents;
+using WarInPalace.Core.Components.PathComponents;
+using WarInPalace.Core.Components.Tags;
+
 using WarInPalace.Core.Enums;
+using WarInPalace.Core.Input;
 using WarInPalace.Core.Map;
 using WarInPalace.Core.Systems;
 using WarInPalace.Core.Utils;

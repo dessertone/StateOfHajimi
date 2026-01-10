@@ -1,5 +1,6 @@
 ﻿using Arch.Core;
 using WarInPalace.Core.Components;
+using WarInPalace.Core.Components.MoveComponents;
 using WarInPalace.Core.Utils;
 
 namespace WarInPalace.Core.Systems;

@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Input;
 using Serilog;
+using WarInPalace.Core.Input;
 
 namespace WarInPalace.Client.Input.Core;
 

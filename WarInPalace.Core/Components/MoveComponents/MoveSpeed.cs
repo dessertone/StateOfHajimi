@@ -1,4 +1,4 @@
-﻿namespace WarInPalace.Core.Components;
+﻿namespace WarInPalace.Core.Components.MoveComponents;
 
 
 /// <summary>

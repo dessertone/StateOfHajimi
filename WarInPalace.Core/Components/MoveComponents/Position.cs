@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace WarInPalace.Core.Components;
+namespace WarInPalace.Core.Components.MoveComponents;
 
 public struct Position
 {
