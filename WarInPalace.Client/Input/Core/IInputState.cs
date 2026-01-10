@@ -1,10 +1,11 @@
 ﻿using Avalonia.Input;
+using WarInPalace.Client.Input.Core;
 
-namespace WarInPalace.Client.Input;
+namespace WarInPalace.Client.Input.Core;
 
 public interface IInputState
 {
-    void Enter(InputContext context);
+    void Enter(InputController controller);
     void Exit();
     void Update(float deltaTime);
     void OnPointerPressed(PointerPressedEventArgs e);

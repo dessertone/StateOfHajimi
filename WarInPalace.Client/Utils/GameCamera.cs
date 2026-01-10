@@ -2,6 +2,8 @@
 using System;
 using System.Numerics;
 using Avalonia;
+using Serilog;
+using Serilog.Core;
 
 namespace WarInPalace.Client.Utils;
 
@@ -12,10 +14,9 @@ public class GameCamera
     /// </summary>
     public Vector2 Position { get; set; } = Vector2.Zero;
     public float Zoom { get; set; } = 1.0f;
-
+    public float Speed { get; set; } = 1200.0f;
     public Size ViewportSize { get; set; }
     private Vector2 ScreenCenter => new ((float)ViewportSize.Width / 2.0f, (float)ViewportSize.Height / 2.0f);
-
     public Point WorldToScreen(Vector2 worldPos)
     {
         var relativePos = (worldPos - Position) * Zoom;
@@ -23,7 +24,30 @@ public class GameCamera
             relativePos.X + ScreenCenter.X,
             relativePos.Y + ScreenCenter.Y
         );
+        
     }
+    
+    private const float MinZoom = 0.5f;
+    private const float MaxZoom = 5.0f;
+
+    /// <summary>
+    /// 以屏幕上的某个点为中心进行缩放
+    /// </summary>
+    /// <param name="zoomDelta">缩放增量</param>
+    /// <param name="screenFocusPoint">鼠标在屏幕上的位置</param>
+    public void ZoomAt(float zoomDelta, Point screenFocusPoint)
+    {
+        var worldPosBefore = ScreenToWorld(screenFocusPoint);
+        var newZoom = Zoom + zoomDelta;
+        Zoom = Math.Clamp(newZoom, MinZoom, MaxZoom);
+        var screenPosAfter = WorldToScreen(worldPosBefore);
+        var screenOffset = new Vector2(
+            (float)(screenPosAfter.X - screenFocusPoint.X),
+            (float)(screenPosAfter.Y - screenFocusPoint.Y)
+        );
+        Position += screenOffset / Zoom;
+    }
+    public void Move(Vector2 delta) => Position += delta * Speed;
     
     public Vector2 ScreenToWorld(Point screenPos)
     {
@@ -31,7 +55,6 @@ public class GameCamera
         var relativePos = screenVec - ScreenCenter;
         return (relativePos / Zoom) + Position;
     }
-
     public void ClampToMap(int mapPixelWidth, int mapPixelHeight)
     {
 
@@ -51,7 +74,6 @@ public class GameCamera
         {
             Position = Position with { X = Math.Clamp(Position.X, minX, maxX) };
         }
-        
         if (maxY < minY)
         {
             Position = Position with { Y = mapPixelHeight / 2.0f };
@@ -60,5 +82,10 @@ public class GameCamera
         {
             Position = Position with { Y = Math.Clamp(Position.Y, minY, maxY) };
         }
+    }
+
+    public void MoveCameraByPixel(Vector2 delta)
+    {
+        Position += delta;
     }
 }

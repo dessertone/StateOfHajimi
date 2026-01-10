@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using Arch.Core;
 using WarInPalace.Core.Components;
+using WarInPalace.Core.Components.PathComponents;
 
 namespace WarInPalace.Core.Systems;
 

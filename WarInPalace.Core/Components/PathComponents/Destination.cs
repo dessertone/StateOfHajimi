@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace WarInPalace.Core.Components;
+namespace WarInPalace.Core.Components.PathComponents;
 
 /// <summary>
 /// 对象的移动目的地

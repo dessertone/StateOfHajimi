@@ -21,7 +21,7 @@ public class CommandDispatchSystem:BaseSystem
     {
         foreach (var command in _snapshot.Commands)
         {
-            _commandHandlers[command.ToString()].Handle(command);
+            _commandHandlers[command.ToString()].Handle(command, GameWorld, deltaTime);
         }
     }
 }

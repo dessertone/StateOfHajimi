@@ -3,6 +3,7 @@ using System.Runtime.InteropServices.Marshalling;
 using Arch.Core;
 using WarInPalace.Client.Input;
 using WarInPalace.Core.Components;
+using WarInPalace.Core.Components.PathComponents;
 using WarInPalace.Core.Enums;
 using WarInPalace.Core.Map;
 using WarInPalace.Core.Systems;
@@ -28,7 +29,7 @@ public class GameEngine:IDisposable
     /// <summary>
     /// 网格地图
     /// </summary>
-    public TileMap CurrentMap { get; private set; } = new TileMap(50, 50, 40);
+    public TileMap CurrentMap { get; private set; } = new TileMap(100, 100, 40);
     
     /// <summary>
     /// 初始化定义系统更新顺序
@@ -43,10 +44,8 @@ public class GameEngine:IDisposable
         _systemGroup.Add(new GridBuildSystem(GameWorld));
         // 初始化地图
         _systemGroup.Add(new MapLoaderSystem(GameWorld, CurrentMap));
-        // 框选系统
-        _systemGroup.Add(new SelectionSystem(GameWorld));
-        // 输入系统
-        _systemGroup.Add(new InputSystem(GameWorld));
+        // 批量处理命令
+        _systemGroup.Add(new CommandDispatchSystem(GameWorld, Bridge.CurSnapshot));
         // 导航系统
         _systemGroup.Add(new NavigationSystem(GameWorld));
         // 避让系统
@@ -62,15 +61,15 @@ public class GameEngine:IDisposable
     private void Test()
     {
         var speed = 200f;
-        for (int i = 0; i < 20; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             GameWorld.Create(
-                new Position(100 + 40 * i,40 * i),
+                new Position(100 + 40 * i,40),
                 new Velocity(0, 0), 
                 new MoveSpeed(speed), 
                 new Destination{StopDistanceSquared = 1.0f}, 
                 BodyCollider.CreateCircle(27, force: speed / 1e4f),
-                new IsSelected(),
+                
                 new Selectable());
         }
     }
@@ -82,7 +81,6 @@ public class GameEngine:IDisposable
     public void Update(float deltaTime)
     {
         Bridge.CaptureCurrentShot();
-        
         _systemGroup.Update(deltaTime);
     }
 
@@ -117,11 +115,11 @@ public class GameEngine:IDisposable
                 
                 else if (x > 2 && x < map.Width - 2 && y > 2 && y < map.Height - 2)
                 {
-                    if (random.NextDouble() < 0.05) 
+                    if (random.NextDouble() < 0.01) 
                     {
                         map.SetTile(x, y, TileType.Wall);
                     }
-                    else if (random.NextDouble() < 0.1) 
+                    else if (random.NextDouble() < 0.01) 
                     {
                         map.SetTile(x, y, TileType.Dirt);
                     }

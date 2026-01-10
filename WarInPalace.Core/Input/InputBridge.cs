@@ -52,11 +52,8 @@ public class InputBridge
     {
         var commands = new List<GameCommand>();
         while (_commands.TryDequeue(out var command)) commands.Add(command);
-        
-        CurSnapshot = new()
-        {
-            MouseWorldPosition = _MousePosition,
-            Commands = commands,
-        };
+
+        CurSnapshot.MouseWorldPosition = _MousePosition;
+        CurSnapshot.Commands = commands;
     }
 }
