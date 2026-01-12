@@ -27,7 +27,6 @@ sealed class Program
             AttributeHelper.Initialize();
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
-            Log.Information("Game start...");
         }
         catch (Exception ex)
         {
@@ -35,6 +34,7 @@ sealed class Program
         }
         finally
         {
+            Log.Information("Game exit...");
             Log.CloseAndFlush();
         }
     }

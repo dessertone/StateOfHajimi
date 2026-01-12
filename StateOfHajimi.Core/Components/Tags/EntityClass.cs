@@ -4,5 +4,5 @@ namespace StateOfHajimi.Core.Components.Tags;
 
 public struct EntityClass
 {
-    public UnitType Type;
+    public EntityType Type;
 }

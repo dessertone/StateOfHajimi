@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Serilog;
+using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Data.Config;
 using StateOfHajimi.Core.Enums;
 
@@ -10,8 +11,10 @@ public static class GameConfig
     private static IConfigurationRoot _configurationRoot;
     private static GameSettings _settings;
     
-    private static Dictionary<UnitType, UnitStateConfig> _unitStatsCache = new();
-
+    private static readonly Dictionary<EntityType, UnitStateConfig> _entityStatsCache = new();
+    
+    private static readonly Dictionary<string, UnitAnimationConfig> _unitAnimation = new();
+    
     public static void Initialize()
     {
         var builder = new ConfigurationBuilder()
@@ -45,30 +48,48 @@ public static class GameConfig
     /// </summary>
     private static void RefreshUnitCache()
     {
-        _unitStatsCache.Clear();
+        _entityStatsCache.Clear();
         foreach (var kvp in _settings.Units)
         {
-            if (Enum.TryParse<UnitType>(kvp.Key, true, out var type))
+            if (Enum.TryParse<EntityType>(kvp.Key, true, out var type))
             {
-                _unitStatsCache[type] = kvp.Value;
+                _entityStatsCache[type] = kvp.Value;
             }
             else
             {
                 Log.Warning($"Unknown unit type: {kvp.Key}");
             }
         }
+        _unitAnimation.Clear();
+        foreach (var kvp in _settings.UnitAnimations)
+        {
+            _unitAnimation[kvp.Key] = kvp.Value;
+        }
     }
 
     /// <summary>
     /// 获取指定兵种的配置数据
     /// </summary>
-    public static UnitStateConfig GetUnitState(UnitType type)
+    public static UnitStateConfig GetUnitState(EntityType type)
     {
-        if (_unitStatsCache.TryGetValue(type, out var state))
+        if (_entityStatsCache.TryGetValue(type, out var state))
         {
             return state;
         }
         Log.Error($"Unknown unit type: {type}, create default value");
         return new UnitStateConfig { MaxHp = 1, Size = 10 };
     }
+
+
+    public static UnitAnimationConfig? GetUnitAnimation(string key)
+    {
+        if (_unitAnimation.TryGetValue(key, out var animation))
+        {
+            return animation;
+        }
+        Log.Warning($"Unknown unit animation key: {key}");
+        return null;
+    }
+    public static UnitAnimationConfig? GetEntityAnimation(EntityType type) => GetUnitAnimation(type.ToString());
+    public static UnitAnimationConfig? GetBuildingAnimation(BuildingType type) => GetUnitAnimation(type.ToString());
 }

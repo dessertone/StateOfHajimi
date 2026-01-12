@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -10,45 +11,32 @@ namespace StateOfHajimi.Client.Utils;
 
 public static class AssetsManager
 {
-    private static readonly Dictionary<string, Bitmap> _textures = new();
-    private static readonly Dictionary<TileType, IBrush> _tileBrushes = new();
+    // 改存 SpriteSheet
+    private static readonly Dictionary<string, SpriteSheet> _sheets = new();
 
-    public static void Initialize()
+    public static async Task InitializeAsync()
     {
-        LoadTexture("LightFactory", "Assets/Factories/量子猫窝.png");
-        LoadTexture("LightFactory-red", "Assets/Factories/量子猫窝-red.png");
-        LoadTexture("LightweightMechanicalCat", "Assets/Entities/轻型机械豪猫");
-        _tileBrushes[TileType.Grass] = Brushes.DarkGreen;
-        _tileBrushes[TileType.Dirt] = Brush.Parse("#5e4d33");
-        _tileBrushes[TileType.Water] = Brushes.DeepSkyBlue;
-        _tileBrushes[TileType.Wall] = Brushes.WhiteSmoke;
-        
-        Log.Information("AssetManager initialized.");
+        LoadSpriteSheet("LightFactory", "Assets/Factories/LightFactory/LightFactory_sheet.png", 2050, 2050);
+        LoadSpriteSheet("LightFactory-red", "Assets/Factories/LightFactory/LightFactory-red_sheet.png", 2050, 2050);
+        LoadSpriteSheet("GroundTexture", "Assets/GroundTexture.jpg", 1024, 1024);
+        LoadSpriteSheet("CrystalCluster", "Assets/CrystalCluster.png", 1024, 1024);
+        LoadSpriteSheet("CatStatue", "Assets/CatStatue.png", 1024, 1024);
+        Log.Information("Assets initialized.");
     }
 
-    private static void LoadTexture(string key, string path)
+    private static void LoadSpriteSheet(string key, string path, int frameW, int frameH)
     {
         try
         {
             var uri = new Uri($"avares://StateOfHajimi.Client/{path}");
-            _textures[key] = new Bitmap(AssetLoader.Open(uri));
-            Log.Information($"loaded {key} from {path}");
+            var bitmap = new Bitmap(AssetLoader.Open(uri));
+            Log.Information(bitmap.ToString());
+            _sheets[key] = new SpriteSheet(bitmap, frameW, frameH);
         }
         catch (Exception ex)
         {
-            Log.Error($"Failed to load texture {path}: {ex.Message}");
+            Log.Error($"Failed to load sheet {path}: {ex.Message}");
         }
     }
-
-    public static Bitmap? GetTexture(string key) => _textures.TryGetValue(key, out var bmp) ? bmp : null;
-    
-    public static IBrush GetTileBrush(TileType type) => _tileBrushes.TryGetValue(type, out var brush) ? brush : Brushes.Magenta;
-
-
-    public static string GetTextureKey(UnitType type) => type switch
-    {
-        UnitType.HeavyweightMechanicalCat => "HeavyweightMechanicalCat",
-        UnitType.LightweightMechanicalCat => "LightweightMechanicalCat",
-        _ => "HeavyweightMechanicalCat"
-    };
+    public static SpriteSheet? GetSheet(string key) => _sheets.TryGetValue(key, out var s) ? s : null;
 }

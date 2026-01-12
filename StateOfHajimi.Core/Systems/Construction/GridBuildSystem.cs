@@ -24,6 +24,5 @@ public class GridBuildSystem: BaseSystem
         {
             _spatialGrid.Add(entity, pos.Value);
         });
-        
     }
 }

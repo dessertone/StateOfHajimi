@@ -27,8 +27,8 @@ public class SelectHandler: ICommandHandler
         if(command is not SelectCommand selectCommand) throw new ArgumentException("command is not SelectCommand");
         var start = selectCommand.Start;
         var end = selectCommand.End;
-        float distSq = Vector2.DistanceSquared(start, end);
-        bool isSingleClick = distSq < DragThresholdSq;
+        var distSq = Vector2.DistanceSquared(start, end);
+        var isSingleClick = distSq < DragThresholdSq;
 
         // 清除当前所有已选单位
         // TODO: 尚未实现Shift加选
@@ -63,7 +63,6 @@ public class SelectHandler: ICommandHandler
             if (isSingleClick)
             {
                 shouldSelect = IsPointInCollider(end, pos.Value, collider);
-                //有多个重叠，都会被选中
             }
             else
             {
@@ -73,7 +72,7 @@ public class SelectHandler: ICommandHandler
             }
             if (shouldSelect)
             {
-                if (!entity.Has<IsSelected>() && entity.Has<Selectable>())
+                if (!entity.Has<IsSelected>() && entity.Has<Selectable>() && entity.Has<EntityClass>())
                 {
                     entity.Add(new IsSelected());
                 }

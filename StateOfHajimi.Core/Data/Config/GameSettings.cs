@@ -3,4 +3,5 @@
 public class GameSettings
 {
     public Dictionary<string, UnitStateConfig> Units { get; set; } = new();
+    public Dictionary<string, UnitAnimationConfig> UnitAnimations { get; set; } = new();
 }

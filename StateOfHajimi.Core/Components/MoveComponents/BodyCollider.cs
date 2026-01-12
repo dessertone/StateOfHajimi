@@ -7,8 +7,8 @@ public struct BodyCollider
 {
     public BodyType Type;
     
-    public Vector2 Size; 
-        
+    public Vector2 Size;
+    public Vector2 RenderSize;
     public Vector2 Offset; 
     public float AvoidanceForce; 
     

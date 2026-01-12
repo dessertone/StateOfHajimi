@@ -50,6 +50,7 @@ public class MapLoaderSystem: BaseSystem
             { 
                 Type = BodyType.AABB, 
                 Size = new Vector2(map.TileSize / 2, map.TileSize / 2),
+                RenderSize = new Vector2(map.TileSize, map.TileSize),
                 AvoidanceForce = 99999f, 
                 Offset = Vector2.Zero
             }

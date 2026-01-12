@@ -3,7 +3,7 @@
 namespace StateOfHajimi.Core.Utils.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-public class BuildUnitTypeAttribute(UnitType unitType) : Attribute
+public class BuildUnitTypeAttribute(EntityType entityType) : Attribute
 {
-    public UnitType UnitType { get;} = unitType;
+    public EntityType EntityType { get;} = entityType;
 }

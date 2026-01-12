@@ -12,7 +12,7 @@ public static class AttributeHelper
 {
     public static readonly Dictionary<string, ICommandHandler> CommandHandlers = new();
     public static readonly Dictionary<FormationType, IFormation> Strategies = new();
-    public static readonly Dictionary<UnitType, IEntityBuilder> EntityBuilders = new();
+    public static readonly Dictionary<EntityType, IEntityBuilder> EntityBuilders = new();
 
     private static Type[] types = Assembly.GetExecutingAssembly().GetTypes();
 
@@ -57,7 +57,7 @@ public static class AttributeHelper
         {
             if (type.GetCustomAttribute<BuildUnitTypeAttribute>() is { } attr)
             {
-                EntityBuilders[attr.UnitType] =  (IEntityBuilder)Activator.CreateInstance(type)!;
+                EntityBuilders[attr.EntityType] =  (IEntityBuilder)Activator.CreateInstance(type)!;
             }
         }
         Log.Information("EntityBuilders Registered");

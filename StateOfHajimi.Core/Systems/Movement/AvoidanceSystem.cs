@@ -24,6 +24,12 @@ public class AvoidanceSystem : BaseSystem
 
     public override void Update(float deltaTime)
     {
+        HandleCollision();
+    }
+
+
+    public void HandleCollision()
+    {
         GameWorld.Query(in _avoidanceQuery, (Entity curEntity, ref BodyCollider c, ref Position p, ref Velocity v) =>
         {
             if (c.Type == BodyType.AABB) return;
@@ -51,7 +57,6 @@ public class AvoidanceSystem : BaseSystem
                 avoidanceNormalSum += result.Normal * weight;
                 contactCount++;
             } 
-
             if (contactCount > 0)
             {
                 var avgNormal = Vector2.Normalize(avoidanceNormalSum);

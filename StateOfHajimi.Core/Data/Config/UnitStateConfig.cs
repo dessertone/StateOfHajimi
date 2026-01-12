@@ -8,4 +8,6 @@ public class UnitStateConfig
     public float Size { get; set; }      // 碰撞体积大小
     public int AttackDamage { get; set; }
     public float AttackRange { get; set; }
+    public float AttackSpeed { get; set; }
+    public float VisionRange { get; set; }
 }

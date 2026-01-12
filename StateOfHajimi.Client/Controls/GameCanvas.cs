@@ -64,13 +64,11 @@ public class GameCanvas : Control, IGameView
         Focusable = true;
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
+    protected override async void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        // 1. 初始化资源 (只需一次)
-        AssetsManager.Initialize();
-
-        // 2. 初始化相机
+        await AssetsManager.InitializeAsync();
+        
         if (GameEngine.CurrentMap != null)
         {
             var map = GameEngine.CurrentMap;

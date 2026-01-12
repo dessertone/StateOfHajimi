@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text.Json.Serialization;
 using Arch.Core;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.ProductComponents;
@@ -26,7 +27,7 @@ public class AutoProductSystem:BaseSystem
             {
                 prod.Progress = 0;
                 var spawnPos = pos.Value + new Vector2(0, 600); 
-                UnitFactory.CreateUnit(GameWorld, prod.ProductUnitType, spawnPos, teamId.Value);
+                UnitFactory.CreateUnit(GameWorld, prod.ProductEntityType, spawnPos, teamId.Value,ref prod.Rally);
             }
         });
     }

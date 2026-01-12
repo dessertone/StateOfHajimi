@@ -12,7 +12,6 @@ public class RectangleFormation:IFormation
     public int RowCount { get; set; } = 10;
     public IEnumerable<Vector2> Spawn(Vector2 center, float spacing = 20)
     {
-        var col = - RowCount / 2;
         var row = 0;
         while (true)
         {

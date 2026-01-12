@@ -5,8 +5,8 @@ namespace StateOfHajimi.Core.Components.ProductComponents;
 
 public struct AutoProduction
 {
-    public UnitType ProductUnitType;
+    public EntityType ProductEntityType;
     public float Progress;
     public float Interval;
-    public Vector2 Target;
+    public RallyPoint Rally;
 }

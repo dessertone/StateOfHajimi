@@ -35,7 +35,7 @@ public class NavigateHandler: ICommandHandler
 
         if (units.Count == 0) return;
         
-        var formation = FormationResolver.Get(FormationType.Spiral);
+        var formation = FormationResolver.Get(FormationType.CenterRectangle);
         var targetPoints = new List<Vector2>();
         using var generator = formation.Spawn(navigateCommand.target, spacing: 70).GetEnumerator();
         for (var i = 0; i < units.Count; i++)
