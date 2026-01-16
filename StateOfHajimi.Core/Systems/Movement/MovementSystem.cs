@@ -1,24 +1,19 @@
 ﻿using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.Tags;
 
 namespace StateOfHajimi.Core.Systems.Movement;
 
-public class MovementSystem:BaseSystem
+public partial class MovementSystem:BaseSystem<World, float>
 {
-    private static readonly QueryDescription _movementQuery = new QueryDescription()
-        .WithAll<Position, Velocity>();
+    public MovementSystem(World world) : base(world) { }
 
-
-    public MovementSystem(World world) : base(world)
+    [Query]
+    [All<Position, Velocity>, None<Disabled,IsDying>]
+    private void Move([Data] in float deltaTime,ref Position p, ref Velocity v)
     {
-    }
-    
-
-    public override void Update(float deltaTime)
-    {
-        GameWorld.Query(in _movementQuery, (ref Position p, ref Velocity v) =>
-        {
-            p.Value += v.Value * deltaTime;
-        });
+        p.Value += v.Value * deltaTime;
     }
 }

@@ -1,31 +1,27 @@
 ﻿using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
 using StateOfHajimi.Core.Components.StateComponents;
+using StateOfHajimi.Core.Components.Tags;
 
 namespace StateOfHajimi.Core.Systems.Animation;
 
-public class AnimationSystem:BaseSystem
+public partial class AnimationSystem:BaseSystem<World, float>
 {
     
-    private static readonly QueryDescription _animationQuery = new QueryDescription()
-        .WithAll<AnimationState>();
-    public AnimationSystem(World world) : base(world)
+    public AnimationSystem(World world) : base(world) { }
+    
+    [Query]
+    [All<AnimationState>, None<Disabled>]
+    private void PlayAnimation([Data]in float deltaTime, ref AnimationState animationState)
     {
-    }
-
-    public override void Update(float deltaTime)
-    {
-        PlayAnimation(deltaTime);
-    }
-
-    private void PlayAnimation(float deltaTime)
-    {
-        GameWorld.Query(in _animationQuery, (Entity entity, ref AnimationState animationState) =>
-        {
-            if (!animationState.IsActive) return;
-            animationState.FrameTimer += deltaTime;
-            if (!(animationState.FrameTimer >= animationState.FrameDuration)) return;
-            animationState.FrameTimer -= animationState.FrameDuration;
-            animationState.Offset = (animationState.Offset + 1) % (animationState.EndFrame - animationState.StartFrame);
-        });
+        if (!animationState.IsActive) return;
+        animationState.FrameTimer += deltaTime;
+        if (!(animationState.FrameTimer >= animationState.FrameDuration)) return;
+        animationState.FrameTimer -= animationState.FrameDuration;
+        var duration = animationState.EndFrame - animationState.StartFrame;
+        if(duration != 0)
+            animationState.Offset = (animationState.Offset + 1) % duration;
+        if(!animationState.IsLoop && animationState.Offset == duration) animationState.IsActive = false;
     }
 }

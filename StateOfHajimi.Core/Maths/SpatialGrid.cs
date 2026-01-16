@@ -1,9 +1,7 @@
 ﻿using System.Numerics;
 using Arch.Core;
-using Arch.Core.Extensions;
-using StateOfHajimi.Core.Components;
 
-namespace StateOfHajimi.Core.Utils;
+namespace StateOfHajimi.Core.Maths;
 
 public class SpatialGrid
 {
@@ -49,13 +47,13 @@ public class SpatialGrid
     /// 返回指定位置在指定搜索半径下搜索到的所有实体
     /// </summary>
     /// <param name="pos"></param>
-    /// <param name="size"></param>
+    /// <param name="range"></param>
     /// <returns></returns>
-    public IEnumerable<Entity> Retrieve(Vector2 pos, int size = 3)
+    public IEnumerable<Entity> Retrieve(Vector2 pos, float range = 2000)
     {
         var (r, c) = GetCellKey(pos);
+        var size = (int)(range * 2 / _cellSize + 2);
         var start = 0 - size / 2;
-        // 遍历周围 size * size 的网格
         for (var col = start; col < start + size; ++col)
         {
             for (var row = start; row < start + size; ++row)
@@ -69,7 +67,7 @@ public class SpatialGrid
         }
     }
     /// <summary>
-    /// [新增] 获取指定矩形区域内的所有潜在实体
+    /// 获取指定矩形区域内的所有潜在实体
     /// </summary>
     public IEnumerable<Entity> QueryRect(Vector2 startPos, Vector2 endPos)
     {

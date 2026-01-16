@@ -46,8 +46,7 @@ public class SelectState: InputStateBase
         {
             var startWorld = GameView.ScreenToWorld(_startPos);
             var endWorld = GameView.ScreenToWorld(_curPos);
-
-            Log.Debug($"Selection command activated, position from {startWorld}  to {endWorld}");
+            
             Bridge.AddCommand(new SelectCommand(startWorld, endWorld, false));
             GameView.NotifyDrawSelection(_startPos, _curPos, false);
             Controller.TransitionTo(new IdleState());

@@ -27,8 +27,8 @@ public class GameCamera
         
     }
     
-    private const float MinZoom = 0.5f;
-    private const float MaxZoom = 5.0f;
+    private const float MinZoom = 0.4f;
+    private const float MaxZoom = 3.0f;
 
     /// <summary>
     /// 以屏幕上的某个点为中心进行缩放

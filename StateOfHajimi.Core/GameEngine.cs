@@ -1,20 +1,16 @@
 ﻿using System.Numerics;
-using System.Resources;
-using System.Runtime.InteropServices.Marshalling;
 using Arch.Core;
+using Arch.System;
 using StateOfHajimi.Core.Components.MoveComponents;
-using StateOfHajimi.Core.Components.PathComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Map;
-using StateOfHajimi.Core.Systems;
-using StateOfHajimi.Core.Utils;
-using StateOfHajimi.Core.Components;
 using StateOfHajimi.Core.Components.ProductComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Data;
 using StateOfHajimi.Core.Systems.AI;
 using StateOfHajimi.Core.Systems.Animation;
+using StateOfHajimi.Core.Systems.Combat;
 using StateOfHajimi.Core.Systems.Construction;
 using StateOfHajimi.Core.Systems.Input;
 using StateOfHajimi.Core.Systems.Movement;
@@ -32,8 +28,7 @@ public class GameEngine:IDisposable
     /// <summary>
     /// 系统集群
     /// </summary>
-    private SystemGroup _systemGroup = new ();
-
+    private readonly Group<float> _systems;
     /// <summary>
     /// 输入桥接器
     /// </summary>
@@ -48,93 +43,108 @@ public class GameEngine:IDisposable
     /// </summary>
     public GameEngine()
     {
-        
         GameWorld = World.Create();
         GenerateDemoMap(CurrentMap);
-        
-        // 初始化网格
-        _systemGroup.Add(new GridBuildSystem(GameWorld));
-        // 初始化AI
-        _systemGroup.Add(new AISystem(GameWorld));
-        // 初始化地图
-        _systemGroup.Add(new MapLoaderSystem(GameWorld, CurrentMap));
-        // 批量处理命令
-        _systemGroup.Add(new CommandDispatchSystem(GameWorld, Bridge.CurSnapshot));
-        // 动画系统
-        _systemGroup.Add(new AnimationSystem(GameWorld));
-        // 工厂生产系统
-        _systemGroup.Add(new AutoProductSystem(GameWorld));
-        // 导航系统
-        _systemGroup.Add(new NavigationSystem(GameWorld));
-        // 避让系统
-        _systemGroup.Add(new AvoidanceSystem(GameWorld));
-        // 移动系统
-        _systemGroup.Add(new MovementSystem(GameWorld));
-        
-        _systemGroup.Initialize();
-        
+        _systems = new("systemGroup",
+            // 死亡系统
+            new DeathSystem(GameWorld),
+            // 初始化网格
+            new GridBuildSystem(GameWorld), 
+            // 初始化AI
+            new AISystem(GameWorld),
+            // 初始化地图
+            new MapLoaderSystem(GameWorld, CurrentMap),
+            // 批量处理命令
+            new CommandDispatchSystem(GameWorld, Bridge.CurSnapshot),
+            // 动画系统
+            new AnimationSystem(GameWorld),
+            // 工厂生产系统
+            new AutoProductSystem(GameWorld),
+            // 避让系统
+            new AvoidanceSystem(GameWorld),
+            // 移动系统
+            new MovementSystem(GameWorld)
+            );
+        _systems.Initialize();
         Test();
     }
 
     private void Test()
     {
-        var animation = GameConfig.GetBuildingAnimation(BuildingType.LightGoodCatFactory)?.StateAnimations;
+        var animation = GameConfig.GetBuildingAnimation(BuildingType.LittleHajimiFactory_blue)?.StateAnimations;
+        if (animation != null)
+            GameWorld.Create(
+                new Position(5000, 5000), // 位置
+                new Velocity(0, 0),
+                new AutoProduction
+                {
+                    Interval = 5f,
+                    ProductEntityType = EntityType.LittleHajimi,
+                    Progress = 0,
+                    Rally = new RallyPoint
+                    {
+                        IsSet = true,
+                        Target = new Vector2(4600, 6000)
+                    }
+                }, // 自动生产
+                new isProductionEnabled(), // 是否是生产状态
+                new AnimationState
+                {
+                    AnimationKey = nameof(BuildingType.LittleHajimiFactory_blue),
+                    StartFrame = animation["Running"].StartFrame,
+                    EndFrame = animation["Running"].EndFrame,
+                    Offset = 0,
+                    FrameTimer = 0,
+                    FrameDuration = animation["Running"].FrameDuration,
+                    IsActive = true,
+                    IsLoop = true
+                },
+                new RenderSize(new Vector2(600, 600)),
+                new BodyCollider
+                {
+                    Type = BodyType.Circle,
+                    Size = new Vector2(150, 0),
+                    AvoidanceForce = 999999f,
+                    Offset = new Vector2(0, 150)
+                }, // 碰撞体
+                new BuildingClass { Type = BuildingType.LittleHajimiFactory_blue }, // 建筑类型
+                new Health()
+                {
+                    Current = 1000,
+                    MaxHp = 1000
+                },
+                new TeamId(0) // 阵营id
+            );
         GameWorld.Create(
-            new Position(500, 500), // 位置
+            new Position(6000, 5000), // 位置
             new Velocity(0, 0),
             new AutoProduction{Interval = 5f,
-                ProductEntityType = EntityType.LightweightMechanicalCat, 
+                ProductEntityType = EntityType.LittleHajimi, 
                 Progress = 0, 
                 Rally = new RallyPoint
                 {
                     IsSet = true,
-                    Target = new Vector2(2000,2000)
+                    Target = new Vector2(6000,6000)
                 }
             }, // 自动生产
+            new AnimationState{AnimationKey = nameof(BuildingType.LittleHajimiFactory_blue), IsLoop=true,StartFrame = 0, EndFrame = 12, Offset = 0, FrameTimer = 0, FrameDuration = 0.1f, IsActive = true},
             new isProductionEnabled(), // 是否是生产状态
-            new AnimationState{
-                AnimationKey = "LightGoodCatFactory",
-                StartFrame = animation["Running"].StartFrame,
-                EndFrame = animation["Running"].EndFrame,
-                Offset = 0,
-                FrameTimer = 0,
-                FrameDuration = animation["Running"].FrameDuration, 
-                IsActive = true},
+            new RenderSize(new Vector2(600, 600)),
             new BodyCollider 
             { 
                 Type = BodyType.Circle, 
                 Size = new Vector2(150, 0),
                 AvoidanceForce = 999999f, 
-                RenderSize = new Vector2(600, 600),
-                Offset = new Vector2(0, 250)
+                Offset = new Vector2(0, 150)
             }, // 碰撞体
-            new BuildingClass{ Type = BuildingType.LightGoodCatFactory}, // 建筑类型
-            new TeamId(0) // 阵营id
-        );
-        GameWorld.Create(
-            new Position(2000, 500), // 位置
-            new Velocity(0, 0),
-            new AutoProduction{Interval = 5f,
-                ProductEntityType = EntityType.LightweightMechanicalCat, 
-                Progress = 0, 
-                Rally = new RallyPoint
-                {
-                    IsSet = true,
-                    Target = new Vector2(2000,2000)
-                }
-            }, // 自动生产
-            new AnimationState{StartFrame = 0, EndFrame = 12, Offset = 0, FrameTimer = 0, FrameDuration = 0.1f, IsActive = true},
-            new isProductionEnabled(), // 是否是生产状态
-            new BodyCollider 
-            { 
-                Type = BodyType.Circle, 
-                Size = new Vector2(150, 0),
-                AvoidanceForce = 999999f, 
-                RenderSize = new Vector2(600, 600),
-                Offset = new Vector2(0, 250)
-            }, // 碰撞体
-            new BuildingClass{ Type = BuildingType.LightGoodCatFactory}, // 建筑类型
+            new BuildingClass{ Type = BuildingType.LittleHajimiFactory_red}, // 建筑类型
+            new Health()
+            {
+                Current = 1000,
+                MaxHp = 1000
+            },
             new TeamId(1) // 阵营id
+            
         );
     }
     
@@ -145,7 +155,9 @@ public class GameEngine:IDisposable
     public void Update(float deltaTime)
     {
         Bridge.CaptureCurrentShot();
-        _systemGroup.Update(deltaTime);
+        _systems.BeforeUpdate(in deltaTime);
+        _systems.Update(in deltaTime);
+        _systems.AfterUpdate(in deltaTime);
     }
 
     /// <summary>
@@ -153,6 +165,7 @@ public class GameEngine:IDisposable
     /// </summary>
     public void Dispose()
     {
+        _systems.Dispose();
         GameWorld.Dispose();
     }
     
@@ -162,7 +175,7 @@ public class GameEngine:IDisposable
     /// <param name="map"></param>
     private void GenerateDemoMap(TileMap map)
     {
-        var random = new Random();
+        /*var random = new Random();*/
 
         for (int y = 0; y < map.Height; y++)
         {
@@ -177,7 +190,7 @@ public class GameEngine:IDisposable
                     map.SetTile(x, y, TileType.Wall);
                 }
                 
-                else if (x > 2 && x < map.Width - 2 && y > 2 && y < map.Height - 2)
+                /*else if (x > 2 && x < map.Width - 2 && y > 2 && y < map.Height - 2)
                 {
                     if (random.NextDouble() < 0.2) 
                     {
@@ -187,14 +200,14 @@ public class GameEngine:IDisposable
                     {
                         map.SetTile(x, y, TileType.Dirt);
                     }
-                }
+                }*/
             }
         }
         int centerX = map.Width / 2;
         int centerY = map.Height / 2;
         int radius = 5;
 
-        for (int y = centerY - radius; y <= centerY + radius; y++)
+        /*for (int y = centerY - radius; y <= centerY + radius; y++)
         {
             for (int x = centerX - radius; x <= centerX + radius; x++)
             {
@@ -206,6 +219,6 @@ public class GameEngine:IDisposable
                     }
                 }
             }
-        }
+        }*/
     }
 }

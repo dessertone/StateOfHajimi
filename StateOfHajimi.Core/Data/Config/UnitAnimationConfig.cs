@@ -6,6 +6,7 @@ public class StateAnimationInfo
     public int StartFrame { get; set; }
     public int EndFrame { get; set; }
     public float FrameDuration { get; set; }
+    public bool IsLoop { get; set; }
 }
 
 // 单个单元的动画配置

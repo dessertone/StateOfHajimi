@@ -1,28 +1,28 @@
 ﻿using Arch.Core;
+using Arch.System;
+using Arch.System.SourceGenerator;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.Tags;
+using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Utils;
 
 namespace StateOfHajimi.Core.Systems.Construction;
 
-public class GridBuildSystem: BaseSystem
+public partial class GridBuildSystem: BaseSystem<World, float>
 {
     
     private static readonly SpatialGrid _spatialGrid = SpatialGrid.Instance; 
-    
-    private static readonly QueryDescription _buildGridQuery = new QueryDescription()
-        .WithAll<BodyCollider, Position, Velocity>();
-    
-    public GridBuildSystem(World world) : base(world)
+    public GridBuildSystem(World world) : base(world) { }
+    [Query]
+    [All<BodyCollider, Position, Velocity>, None<Disabled,IsDying>]
+    private void BuildGrid(Entity entity, ref Position pos)
     {
-        
+        _spatialGrid.Add(entity, pos.Value);
     }
 
-    public override void Update(float deltaTime)
+    public override void BeforeUpdate(in float t)
     {
+        base.BeforeUpdate(in t);
         _spatialGrid.Clear();
-        GameWorld.Query(in _buildGridQuery, (Entity entity, ref Position pos) =>
-        {
-            _spatialGrid.Add(entity, pos.Value);
-        });
     }
 }

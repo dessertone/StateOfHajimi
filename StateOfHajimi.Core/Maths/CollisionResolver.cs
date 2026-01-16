@@ -1,9 +1,8 @@
-﻿using System;
-using System.Numerics;
+﻿using System.Numerics;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Enums;
 
-namespace StateOfHajimi.Core.Utils;
+namespace StateOfHajimi.Core.Maths;
 
 public struct CollisionResult
 {

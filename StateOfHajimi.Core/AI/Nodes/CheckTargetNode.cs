@@ -5,49 +5,47 @@ using StateOfHajimi.Core.AI.Base;
 using StateOfHajimi.Core.Components.CombatComponents;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.StateComponents;
-using StateOfHajimi.Core.Utils;
+using StateOfHajimi.Core.Components.Tags;
+using StateOfHajimi.Core.Maths;
 
 namespace StateOfHajimi.Core.AI.Nodes;
 
 public class CheckTargetNode: BehaviorNode
 {
-    
-    
     public override NodeStatus Execute(Entity entity, float deltaTime)
     {
-        ref var target = ref entity.Get<AttackTarget>();
-        ref var myPos = ref entity.Get<Position>();
-        ref var myTeam = ref entity.Get<TeamId>();
-        ref var stats = ref entity.Get<CombatStats>();
-        if (target.Target != Entity.Null && target.Target.IsAlive())
-        {
-            return NodeStatus.Success; 
-        }
-        var nearbyEntities = SpatialGrid.Instance.Retrieve(myPos.Value); 
+        if (!entity.Has<AttackTarget, CombatStats, Position, TeamId>()) return NodeStatus.Failure;
+
+        ref var attackTarget = ref entity.Get<AttackTarget>();
+        if (attackTarget.Target != Entity.Null && !attackTarget.Target.Has<IsDying>() && !attackTarget.Target.Has<Disabled>()) return NodeStatus.Failure;
         
-        var minDstSq = stats.VisionRange * stats.VisionRange; 
+        ref var CombatStats = ref entity.Get<CombatStats>();
+        ref var position = ref entity.Get<Position>();
+        ref var team = ref entity.Get<TeamId>().Value;
+        
+        var entities = SpatialGrid.Instance.Retrieve(position.Value, CombatStats.AttackRange);
+        var attackRangeSq = CombatStats.AttackRange * CombatStats.AttackRange;
         var bestTarget = Entity.Null;
-
-        foreach (var other in nearbyEntities)
+        foreach (var otherEntity in entities)
         {
-            if (other == entity) continue;
-            if (!other.Has<TeamId>() || !other.Has<Health>()) continue;
-            
-            if (other.Get<TeamId>().Value == myTeam.Value) continue;
+            if (!otherEntity.Has<TeamId,Health,Position>()
+                || otherEntity.Has<Disabled>()
+                || otherEntity.Has<IsDying>()
+                || otherEntity == entity) continue;
+            if (otherEntity.Get<TeamId>().Value == team) continue;
 
-            var otherPos = other.Get<Position>().Value;
-            var dstSq = Vector2.DistanceSquared(myPos.Value, otherPos);
-            if (dstSq < minDstSq)
+            var otherPos = otherEntity.Get<Position>().Value;
+            var dstSq = Vector2.DistanceSquared(position.Value, otherPos);
+            if (dstSq <= attackRangeSq)
             {
-                minDstSq = dstSq;
-                bestTarget = other;
+                bestTarget = otherEntity;
             }
         }
         if (bestTarget != Entity.Null)
         {
-            target.Target = bestTarget;
+            attackTarget.Target = bestTarget;
             return NodeStatus.Success;
         }
-        return NodeStatus.Failure; 
+        return NodeStatus.Failure;
     }
 }

@@ -2,7 +2,6 @@
 
 public enum EntityType
 {
-    LightweightMechanicalCat,
-    MidweightMechanicalCat,
-    HeavyweightMechanicalCat,
+
+    LittleHajimi
 }

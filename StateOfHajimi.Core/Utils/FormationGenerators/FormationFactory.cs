@@ -5,7 +5,7 @@ using StateOfHajimi.Core.Utils.Attributes;
 
 namespace StateOfHajimi.Core.Utils.FormationGenerators;
 
-public static class FormationResolver
+public static class FormationFactory
 {
     /// <summary>
     /// 策略字典
@@ -16,7 +16,7 @@ public static class FormationResolver
     /// <summary>
     /// 初始化所有策略
     /// </summary>
-    static FormationResolver()
+    static FormationFactory()
     {
         _strategies = AttributeHelper.Strategies;
     }

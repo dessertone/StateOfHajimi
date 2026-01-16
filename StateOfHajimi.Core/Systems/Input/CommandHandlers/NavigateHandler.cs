@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Arch.Buffer;
 using Arch.Core;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.PathComponents;
@@ -14,11 +15,12 @@ namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 public class NavigateHandler: ICommandHandler
 {
     private static readonly QueryDescription _queryDescription = new QueryDescription()
-        .WithAll<Position, Destination, IsSelected>();
+        .WithAll<Position, Destination, IsSelected>()
+        .WithNone<Disabled,IsDying>();
     
     public World GameWorld { get; } 
 
-    public void Handle(GameCommand command, World world, float deltaTime)
+    public void Handle(CommandBuffer buffer, GameCommand command, World world, float deltaTime)
     {
         if (command is not NavigateCommand navigateCommand) 
             throw new ArgumentException("command is not navigateCommand");
@@ -35,7 +37,7 @@ public class NavigateHandler: ICommandHandler
 
         if (units.Count == 0) return;
         
-        var formation = FormationResolver.Get(FormationType.CenterRectangle);
+        var formation = FormationFactory.Get(FormationType.CenterRectangle);
         var targetPoints = new List<Vector2>();
         using var generator = formation.Spawn(navigateCommand.target, spacing: 70).GetEnumerator();
         for (var i = 0; i < units.Count; i++)
@@ -49,9 +51,8 @@ public class NavigateHandler: ICommandHandler
         var assignments = SolveGreedyAssignment(units, targetPoints);
         foreach (var assignment in assignments)
         {
-            ref var currentDest = ref world.Get<Destination>(assignment.Entity);
-            currentDest.Value = assignment.TargetPos;
-            currentDest.IsActive = true;
+            ref var currentDest =ref world.Get<Destination>(assignment.Entity);
+            buffer.Set(assignment.Entity, currentDest with{Value = assignment.TargetPos, IsActive = true});
         }
     }
 

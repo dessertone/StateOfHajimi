@@ -1,9 +1,11 @@
 ﻿using System.Numerics;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
+using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Systems.Input.Commands;
 using StateOfHajimi.Core.Utils;
 using StateOfHajimi.Core.Utils.Attributes;
@@ -11,33 +13,32 @@ using StateOfHajimi.Core.Utils.Attributes;
 namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 
 [CommandType(nameof(SelectCommand))]
-public class SelectHandler: ICommandHandler
+public class SelectHandler : ICommandHandler
 {
-    
-    private static readonly QueryDescription _selectedQuery = new QueryDescription()
-        .WithAll<IsSelected>();
-    
+
+    private static readonly QueryDescription _selectedQuery = new QueryDescription().WithAll<IsSelected>();
+
     private const float DragThresholdSq = 16.0f; 
-    
-    private const float ClickSensitivity = 5.0f;
-    
-    private readonly SpatialGrid _spatialGrid = SpatialGrid.Instance; 
-    public void Handle(GameCommand command, World world, float deltaTime)
+
+    private const float ClickSensitivity = 15.0f;
+
+    private readonly SpatialGrid _spatialGrid = SpatialGrid.Instance;
+
+    private readonly List<Entity> _candidates = new(128);
+
+    public void Handle(CommandBuffer buffer, GameCommand command, World world, float deltaTime)
     {
-        if(command is not SelectCommand selectCommand) throw new ArgumentException("command is not SelectCommand");
+        if (command is not SelectCommand selectCommand) return;
+
         var start = selectCommand.Start;
         var end = selectCommand.End;
+        
+        // var isAdditive = selectCommand.IsShiftPressed; 
+        var isAdditive = false; 
+
         var distSq = Vector2.DistanceSquared(start, end);
         var isSingleClick = distSq < DragThresholdSq;
 
-        // 清除当前所有已选单位
-        // TODO: 尚未实现Shift加选
-        world.Query(in _selectedQuery, (entity) =>
-        {
-            entity.Remove<IsSelected>();
-        });
-
-        // 确定查询范围
         Vector2 searchMin, searchMax;
         if (isSingleClick)
         {
@@ -49,61 +50,166 @@ public class SelectHandler: ICommandHandler
             searchMin = Vector2.Min(start, end);
             searchMax = Vector2.Max(start, end);
         }
-
-        // 第一遍：空间网格粗略查询
+        _candidates.Clear();
         foreach (var entity in _spatialGrid.QueryRect(searchMin, searchMax))
         {
-            // 第二遍：精确筛选
-            if (!entity.IsAlive() || !entity.Has<Position>() || !entity.Has<BodyCollider>()) 
-                continue;
-            
+            if (!IsSelectableEntity(entity)) continue;
+
             ref var pos = ref entity.Get<Position>();
             ref var collider = ref entity.Get<BodyCollider>();
-            bool shouldSelect;
+            
+            var isHit = false;
             if (isSingleClick)
             {
-                shouldSelect = IsPointInCollider(end, pos.Value, collider);
+                isHit = IsPointInCollider(end, pos.Value, in collider);
             }
             else
             {
-                
-                shouldSelect = pos.Value.X >= searchMin.X && pos.Value.X <= searchMax.X &&
-                               pos.Value.Y >= searchMin.Y && pos.Value.Y <= searchMax.Y;
+
+                var selectionAABB = new AABB(searchMin, searchMax);
+                isHit = Intersects(selectionAABB, pos.Value, in collider);
             }
-            if (shouldSelect)
+
+            if (isHit)
             {
-                if (!entity.Has<IsSelected>() && entity.Has<Selectable>() && entity.Has<EntityClass>())
-                {
-                    entity.Add(new IsSelected());
-                }
+                _candidates.Add(entity);
             }
+        }
+        
+        if (isSingleClick)
+        {
+            HandleSingleClickSelection(buffer, world, end, isAdditive);
+        }
+        else
+        {
+            HandleBoxSelection(buffer, world, isAdditive);
         }
     }
     
-    /// <summary>
-    /// 判断点是否在碰撞体内
-    /// </summary>
-    /// <param name="point"></param>
-    /// <param name="unitPos"></param>
-    /// <param name="collider"></param>
-    /// <returns></returns>
-    private bool IsPointInCollider(Vector2 point, Vector2 unitPos, BodyCollider collider)
+    private void HandleSingleClickSelection(CommandBuffer buffer, World world, Vector2 clickPoint, bool isAdditive)
     {
-        Vector2 center = unitPos + collider.Offset;
+        if (_candidates.Count == 0)
+        {
+            if (!isAdditive) ClearSelection(buffer, world);
+            return;
+        }
+        
+        var bestTarget = _candidates[0];
+        var bestScore = float.MinValue;
 
+        foreach (var entity in _candidates)
+        {
+            ref var pos = ref entity.Get<Position>();
+
+            var score = pos.Value.Y * 1000f - Vector2.DistanceSquared(pos.Value, clickPoint);
+            
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestTarget = entity;
+            }
+        }
+        
+        if (!isAdditive)
+        {
+            ClearSelection(buffer, world);
+        }
+        
+        if (!bestTarget.Has<IsSelected>())
+        {
+            buffer.Add<IsSelected>(bestTarget);
+        }
+    }
+
+    /// <summary>
+    /// 处理框选逻辑：选中所有候选者
+    /// </summary>
+    private void HandleBoxSelection(CommandBuffer buffer, World world, bool isAdditive)
+    {
+        var candidateSet = new HashSet<Entity>(_candidates);
+        if (!isAdditive)
+        {
+            world.Query(in _selectedQuery, (entity) =>
+            {
+                if (!candidateSet.Contains(entity))
+                {
+                    buffer.Remove<IsSelected>(entity);
+                }
+            });
+        }
+        foreach (var entity in _candidates)
+        {
+            if (!entity.Has<IsSelected>())
+            {
+                buffer.Add<IsSelected>(entity);
+            }
+        }
+    }
+
+    private void ClearSelection(CommandBuffer buffer, World world)
+    {
+        world.Query(in _selectedQuery, (entity) =>
+        {
+            buffer.Remove<IsSelected>(entity);
+        });
+    }
+
+    private bool IsSelectableEntity(Entity entity)
+    {
+        return entity.IsAlive() && 
+               entity.Has<Position>() && 
+               entity.Has<BodyCollider>() && 
+               entity.Has<Selectable>() && 
+               !entity.Has<Disabled>();    
+    }
+    
+    
+    private bool IsPointInCollider(Vector2 point, Vector2 pos, in BodyCollider collider)
+    {
+        Vector2 center = pos + collider.Offset;
         if (collider.Type == BodyType.Circle)
         {
-            
             return Vector2.DistanceSquared(point, center) <= (collider.Size.X * collider.Size.X);
         }
-        else if (collider.Type == BodyType.AABB)
+        // AABB
+        var halfW = collider.Size.X;
+        var halfH = collider.Size.Y;
+        return point.X >= center.X - halfW && point.X <= center.X + halfW &&
+               point.Y >= center.Y - halfH && point.Y <= center.Y + halfH;
+    }
+    
+    private bool Intersects(AABB selectionBox, Vector2 pos, in BodyCollider collider)
+    {
+        Vector2 center = pos + collider.Offset;
+
+        if (collider.Type == BodyType.AABB)
         {
+            // AABB vs AABB
+            var otherMin = new Vector2(center.X - collider.Size.X, center.Y - collider.Size.Y);
+            var otherMax = new Vector2(center.X + collider.Size.X, center.Y + collider.Size.Y);
             
-            float halfW = collider.Size.X;
-            float halfH = collider.Size.Y;
-            return point.X >= center.X - halfW && point.X <= center.X + halfW &&
-                   point.Y >= center.Y - halfH && point.Y <= center.Y + halfH;
+            return selectionBox.Min.X <= otherMax.X && selectionBox.Max.X >= otherMin.X &&
+                   selectionBox.Min.Y <= otherMax.Y && selectionBox.Max.Y >= otherMin.Y;
+        }
+        else if (collider.Type == BodyType.Circle)
+        {
+
+            var closestX = Math.Clamp(center.X, selectionBox.Min.X, selectionBox.Max.X);
+            var closestY = Math.Clamp(center.Y, selectionBox.Min.Y, selectionBox.Max.Y);
+
+            var distanceX = center.X - closestX;
+            var distanceY = center.Y - closestY;
+            var distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+
+            return distanceSquared < (collider.Size.X * collider.Size.X);
         }
         return false;
+    }
+    
+    private readonly struct AABB
+    {
+        public readonly Vector2 Min;
+        public readonly Vector2 Max;
+        public AABB(Vector2 min, Vector2 max) { Min = min; Max = max; }
     }
 }

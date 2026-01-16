@@ -3,9 +3,9 @@ using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Data;
 using StateOfHajimi.Core.Enums;
 
-namespace StateOfHajimi.Core.Utils;
+namespace StateOfHajimi.Core.Utils.Extensions;
 
-public static class AnimationHelper
+public static class AnimationExtensions
 {
     /// <summary>
     /// 切换动画状态
@@ -13,8 +13,9 @@ public static class AnimationHelper
     /// <param name="unitName">单元名称</param>
     /// <param name="anim">单元拥有的动画引用传递</param>
     /// <param name="type">想要切换的动画类型 </param>
-    public static void PlayAnimation(ref AnimationState anim, AnimationStateType type)
+    public static void Switch(this ref AnimationState anim, AnimationStateType type)
     {
+        
         if (anim.Type == type) return;
         var config = GameConfig.GetUnitAnimation(anim.AnimationKey);
         if (config == null) return;
@@ -27,6 +28,8 @@ public static class AnimationHelper
             anim.FrameDuration = stateInfo.FrameDuration;
             anim.Offset = 0;
             anim.FrameTimer = 0;
+            anim.IsLoop = stateInfo.IsLoop;
+            anim.IsActive = true;
         }
         else
         {

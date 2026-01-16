@@ -14,7 +14,7 @@ public class IdleState: InputStateBase
     private bool _isRightMouseDown;
     private bool _isSelectedOld;
     private Point _curPos => GameView.MousePosition;
-    private const float PanSwitchThreshold = 200f;
+    private const float PanSwitchThreshold = 50f;
     public override void Enter(InputController controller)
     {
         base.Enter(controller);
@@ -59,7 +59,6 @@ public class IdleState: InputStateBase
     {
         _isRightMouseDown = false;
         var pos = GameView.ScreenToWorld(_curPos);
-        Log.Debug($"Navigate command activated, position at {pos}");
         Bridge.AddCommand(new NavigateCommand(pos, false, _isSelectedOld));
         _isSelectedOld = true;
     }

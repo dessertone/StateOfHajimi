@@ -2,7 +2,8 @@
 
 public enum BuildingType
 {
-    LightGoodCatFactory,
+    LittleHajimiFactory_blue,
+    LittleHajimiFactory_red,
     MediumGoodCatFactory,
     HeavyGoodCatFactory,
     

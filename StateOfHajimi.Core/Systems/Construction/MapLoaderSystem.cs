@@ -1,17 +1,19 @@
 ﻿using System.Numerics;
 using Arch.Core;
+using Arch.System;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Map;
+using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Utils;
 
 namespace StateOfHajimi.Core.Systems.Construction;
 
-public class MapLoaderSystem: BaseSystem
+public partial class MapLoaderSystem: BaseSystem<World,float>
 {
     
     private static readonly SpatialGrid _spatialGrid = SpatialGrid.Instance;
-    
     private readonly TileMap _tileMap;
     
     public MapLoaderSystem(World world, TileMap map) : base(world)
@@ -19,11 +21,11 @@ public class MapLoaderSystem: BaseSystem
         _tileMap = map;
     }
 
-    public override void Update(float deltaTime)
+    public override void Update(in float deltaTime)
     {
         LoadMap(_tileMap);
     }
-
+    
     public void LoadMap(TileMap map)
     {
         for (int y = 0; y < map.Height; y++)
@@ -44,16 +46,16 @@ public class MapLoaderSystem: BaseSystem
     {
         var pos = map.GridToWorldCenter(x, y);
         var position = new Position { Value = pos };
-        var entity = GameWorld.Create(
+        var entity = World.Create(
             position,
             new BodyCollider 
             { 
                 Type = BodyType.AABB, 
                 Size = new Vector2(map.TileSize / 2, map.TileSize / 2),
-                RenderSize = new Vector2(map.TileSize, map.TileSize),
                 AvoidanceForce = 99999f, 
                 Offset = Vector2.Zero
-            }
+            },
+            new RenderSize(new Vector2(map.TileSize, map.TileSize))
             // TODO 加一个MapObstacle标签组件方便管理
         );
         _spatialGrid.Add(entity, position.Value); 

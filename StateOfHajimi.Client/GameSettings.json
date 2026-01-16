@@ -1,15 +1,15 @@
 ﻿{
     "GameSettings": {
         "Units": {
-            "LightweightMechanicalCat": {
-                "MaxHp": 100,
+            "LittleHajimi": {
+                "MaxHp": 40,
                 "MoveSpeed": 200.0,
                 "BuildTime": 2.0,
                 "Size": 30.0,
                 "AttackDamage": 11,
-                "AttackRange": 300.0,
+                "AttackRange": 1000.0,
                 "AttackSpeed": 1.0,
-                "VisionRange": 1000
+                "VisionRange": 3000
             },
             "MidweightMechanicalCat": {
                 "MaxHp": 200,
@@ -33,14 +33,58 @@
             }
         },
         "UnitAnimations": {
-            "LightGoodCatFactory": {
+            "LittleHajimiFactory_blue": {
                 "TotalFrames": 20,
                 "StateAnimations":
                 {
                     "Running": {
                         "StartFrame": 0,
                         "EndFrame": 20,
-                        "FrameDuration": 0.2                    }
+                        "FrameDuration": 0.2,
+                        "IsLoop": true
+                    }
+                }
+            },
+            "LittleHajimiFactory_red": {
+                "TotalFrames": 14,
+                "StateAnimations":
+                {
+                    "Running": {
+                        "StartFrame": 0,
+                        "EndFrame": 14,
+                        "FrameDuration": 0.2,
+                        "IsLoop": true
+                    }
+                }
+            },
+            "LittleHajimi": {
+                "TotalFrames": 1,
+                "StateAnimations":
+                {
+                    "Idle": {
+                        "StartFrame": 0,
+                        "EndFrame": 0,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Running": {
+                        "StartFrame": 1,
+                        "EndFrame": 1,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Attacking": {
+                        "StartFrame": 2,
+                        "EndFrame": 3,
+                        "FrameDuration": 1,
+                        "IsLoop": false
+                    },
+                    "Dying": {
+                        "StartFrame": 3,
+                        "EndFrame":3,
+                        "FrameDuration": 3,
+                        "IsLoop": false
+                    }
                 }
             }
         }

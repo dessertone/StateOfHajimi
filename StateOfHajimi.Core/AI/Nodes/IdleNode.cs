@@ -6,6 +6,7 @@ using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Utils;
+using StateOfHajimi.Core.Utils.Extensions;
 
 namespace StateOfHajimi.Core.AI.Nodes;
 
@@ -13,10 +14,10 @@ public class IdleNode:BehaviorNode
 {
     public override NodeStatus Execute(Entity entity, float deltaTime)
     {
+        if (!entity.Has<AnimationState,Velocity>()) return NodeStatus.Success;
         ref var velocity = ref entity.Get<Velocity>();
-        if (!entity.Has<AnimationState>()) return NodeStatus.Success;
         ref var anim = ref entity.Get<AnimationState>();
-        AnimationHelper.PlayAnimation(ref anim, AnimationStateType.Idle);
+        anim.Switch(AnimationStateType.Idle);
         velocity.Value = Vector2.Zero; 
         return NodeStatus.Success; 
     }
