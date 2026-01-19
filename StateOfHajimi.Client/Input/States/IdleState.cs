@@ -44,7 +44,7 @@ public class IdleState: InputStateBase
         // TODO 检查是否悬浮在可选中物体上方
         
         // 判断是否转移到拖拽地图状态
-        if (!_isRightMouseDown)
+        if (!_isRightMouseDown) 
         {
             return;
         }

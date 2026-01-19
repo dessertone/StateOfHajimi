@@ -4,6 +4,7 @@ using Serilog;
 using StateOfHajimi.Client.Models.Enums;
 using StateOfHajimi.Core.Data;
 using StateOfHajimi.Core.Utils;
+using StateOfHajimi.Core.Utils.Attributes;
 
 namespace StateOfHajimi.Client;
 

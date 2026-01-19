@@ -1,6 +1,8 @@
-﻿using Arch.Buffer;
+﻿using System.Diagnostics;
+using Arch.Buffer;
 using Arch.Core;
 using Arch.System;
+using Serilog;
 
 namespace StateOfHajimi.Core.Systems;
 
@@ -16,8 +18,9 @@ public abstract class BufferBaseSystem:BaseSystem<World, float>
     {
         base.AfterUpdate(in t);
         Buffer.Playback(World);
-    }
 
+    }
+    
     public override void Dispose()
     {
         base.Dispose();

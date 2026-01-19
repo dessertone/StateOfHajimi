@@ -1,6 +1,6 @@
 ﻿using StateOfHajimi.Core.Enums;
 
-namespace StateOfHajimi.Core.Components.StateComponents;
+namespace StateOfHajimi.Core.Components.RenderComponents;
 
 public struct AnimationState
 {
@@ -12,7 +12,8 @@ public struct AnimationState
     // 当前的状态类型
     public AnimationStateType Type;
     // 单元名称
-    public string AnimationKey;
+    public EntityType AnimationTarget;
+    public Direction CurrentDirection;
     public bool IsActive;
     public bool IsLoop;
 }

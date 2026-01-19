@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace StateOfHajimi.Core.Components.StateComponents;
+namespace StateOfHajimi.Core.Components.RenderComponents;
 
 public struct RenderSize(Vector2 size)
 {

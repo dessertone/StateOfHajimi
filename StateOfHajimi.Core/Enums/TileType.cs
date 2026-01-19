@@ -3,7 +3,7 @@
 public enum TileType
 {
     Grass = 0,
-    Dirt = 1,
-    Wall = 2,
-    Water = 3,
+    Wall = 1,
+    Water = 2,
+    Tree = 3
 }

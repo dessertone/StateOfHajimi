@@ -3,6 +3,8 @@ using Arch.Core.Extensions;
 using Serilog;
 using StateOfHajimi.Core.AI.Base;
 using StateOfHajimi.Core.Components.CombatComponents;
+using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
@@ -24,13 +26,17 @@ public class AttackNode:BehaviorNode
         if (stats.CurrentCooldown <= 0)
         {
             ref var targetHealth = ref targetEntity.Target.Get<Health>();
-            targetHealth.Current -= stats.AttackDamage;
-            stats.CurrentCooldown = stats.AttackSpeed;
-            anim.Switch(AnimationStateType.Attacking);
             if (targetHealth.IsDead)
             {
                 targetEntity.Target = Entity.Null;
+                return NodeStatus.Failure;
             }
+            targetHealth.Current -= stats.AttackDamage;
+            stats.CurrentCooldown = stats.AttackSpeed;
+            anim.Switch(AnimationStateType.Attacking);
+            if(!targetEntity.Target.Has<Position>() || !entity.Has<Position>()) return NodeStatus.Failure;
+            VisualEffectManager.Instance.SpawnDamageText(targetEntity.Target.Get<Position>().Value, stats.AttackDamage);
+            VisualEffectManager.Instance.SpawnLaser(entity.Get<Position>().Value,targetEntity.Target.Get<Position>().Value);
             // 攻击完成
             return NodeStatus.Success;
         }

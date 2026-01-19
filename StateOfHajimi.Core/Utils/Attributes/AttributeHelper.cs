@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
 using Serilog;
-using StateOfHajimi.Core.Data.EntityBuilders;
+using StateOfHajimi.Core.Data.Builders.Bases;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Systems.Input.CommandHandlers;
-using StateOfHajimi.Core.Utils.Attributes;
 using StateOfHajimi.Core.Utils.FormationGenerators;
 
-namespace StateOfHajimi.Core.Utils;
+namespace StateOfHajimi.Core.Utils.Attributes;
 
 public static class AttributeHelper
 {
@@ -60,6 +59,6 @@ public static class AttributeHelper
                 EntityBuilders[attr.EntityType] =  (IEntityBuilder)Activator.CreateInstance(type)!;
             }
         }
-        Log.Information("EntityBuilders Registered");
+        Log.Information("Builders Registered");
     }
 }

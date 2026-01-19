@@ -5,6 +5,7 @@ using StateOfHajimi.Core.AI.Base;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.PathComponents;
 using StateOfHajimi.Core.Components.StateComponents;
+using StateOfHajimi.Core.Navigation;
 
 namespace StateOfHajimi.Core.AI.Nodes;
 
@@ -34,8 +35,28 @@ public class NavigationNode:BehaviorNode
                 destination.IsActive = false;
                 return NodeStatus.Success;
             }
-            velocity.Value = Vector2.Normalize(dir) * moveSpeed;
-            return NodeStatus.Success;
+
+            if (distance <= 300 * 300f)
+            {
+                velocity.Value = Vector2.Normalize(dir) * moveSpeed;
+                return NodeStatus.Success;
+            }
+            if (entity.Has<FlowAlgorithm>())
+            {
+                ref var flowAlgorithm = ref entity.Get<FlowAlgorithm>();
+                if (flowAlgorithm.FlowField != null)
+                {
+                    var d =  flowAlgorithm.FlowField.GetFlowDirection(ref position.Value);
+                    velocity.Value = d * moveSpeed;
+                    return NodeStatus.Success;
+                }
+            }
+            else
+            {
+                velocity.Value = Vector2.Normalize(dir) * moveSpeed;
+                return NodeStatus.Success;
+            }
+
         }
         return NodeStatus.Failure;
     }

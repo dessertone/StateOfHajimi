@@ -54,10 +54,9 @@ public class SelectHandler : ICommandHandler
         foreach (var entity in _spatialGrid.QueryRect(searchMin, searchMax))
         {
             if (!IsSelectableEntity(entity)) continue;
-
             ref var pos = ref entity.Get<Position>();
             ref var collider = ref entity.Get<BodyCollider>();
-            
+            if(!isSingleClick&& entity.Has<BuildingClass>()) continue;
             var isHit = false;
             if (isSingleClick)
             {
@@ -122,7 +121,7 @@ public class SelectHandler : ICommandHandler
     }
 
     /// <summary>
-    /// 处理框选逻辑：选中所有候选者
+    /// 
     /// </summary>
     private void HandleBoxSelection(CommandBuffer buffer, World world, bool isAdditive)
     {
@@ -158,9 +157,8 @@ public class SelectHandler : ICommandHandler
     {
         return entity.IsAlive() && 
                entity.Has<Position>() && 
-               entity.Has<BodyCollider>() && 
-               entity.Has<Selectable>() && 
-               !entity.Has<Disabled>();    
+               entity.Has<BodyCollider,Selectable>() && 
+               !entity.Has<Disabled,IsDying>();    
     }
     
     

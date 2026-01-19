@@ -7,12 +7,17 @@ using StateOfHajimi.Core.Components.CombatComponents;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.PathComponents;
 using StateOfHajimi.Core.Components.ProductComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Components.Tags;
+using StateOfHajimi.Core.Data.Builders.Bases;
+using StateOfHajimi.Core.Data.Config;
 using StateOfHajimi.Core.Enums;
+using StateOfHajimi.Core.Maths;
+using StateOfHajimi.Core.Navigation;
 using StateOfHajimi.Core.Utils.Attributes;
 
-namespace StateOfHajimi.Core.Data.EntityBuilders;
+namespace StateOfHajimi.Core.Data.Builders.EntityBuilders;
 
 [BuildUnitType(EntityType.LittleHajimi)]
 public class LittleHajimiBuilder : IEntityBuilder
@@ -23,41 +28,48 @@ public class LittleHajimiBuilder : IEntityBuilder
         typeof(Velocity), typeof(Destination), typeof(AttackTarget), 
         typeof(CombatStats), typeof(EntityClass), typeof(TeamId), 
         typeof(MoveSpeed), typeof(BodyCollider), typeof(Health), 
-        typeof(Selectable), typeof(RenderSize)
+        typeof(Selectable), typeof(RenderSize), typeof(Facing), typeof(FlowAlgorithm)
     };
     public ComponentType[] Archetype => _archetype;
-    public void Build(CommandBuffer buffer, Entity entity, Vector2 position, int teamId, ref RallyPoint rally)
+    public void Build(CommandBuffer buffer, Entity entity,ref BuildContext context)
     {
-        // 准备实体数据
+        var position = context.Position;
+        var teamId = context.TeamId;
+        var data = context.ExtraData as object[];
+        var rally = data?[0] is RallyPoint r ? r : new RallyPoint{IsSet = false};
+        var flowField = rally.IsSet ? FlowFieldManager.Instance.GetFlowField(ref rally.Target) : null;
+        // 准备实体数据 
         var config = GameConfig.GetUnitState(EntityType.LittleHajimi);
+        
         // 动画
         var animConfig = GameConfig.GetEntityAnimation(EntityType.LittleHajimi);
-        var idleState = animConfig?.StateAnimations[nameof(AnimationStateType.Idle)];
+        if (animConfig != null && animConfig.TryGetInfo(new AnimationKey(AnimationStateType.Idle, Direction.South), out var idleState))
+        {
+            // 渲染动画状态
+            buffer.Set(entity, new AnimationState
+            {
+                FrameDuration = idleState.FrameDuration,
+                StartFrame = idleState.StartFrame,
+                EndFrame = idleState.EndFrame,
+                IsActive = true,
+                AnimationTarget = EntityType.LittleHajimi,
+                Type = AnimationStateType.Idle,
+                Offset = 0,
+                FrameTimer = 0
+            });
+        }
 
 
         // 处理集结点逻辑
         var destination = rally.IsSet
-            ? new Destination { StopDistanceSquared = 3.0f, Value = rally.Target, IsActive = true }
-            : new Destination { StopDistanceSquared = 3.0f };
+            ? new Destination { StopDistanceSquared = 100.0f, Value = rally.Target, IsActive = true }
+            : new Destination { StopDistanceSquared = 100.0f };
 
         // 构建行为树
         var behaviorTree = new AIController
         {
             RootNode = new Selector([
-                new Sequence([
-                    new NavigationNode(),
-                    new Selector(
-                    [
-                        new CheckTargetNode(),
-                        new AttackNode(),
-                        new SuccessNode()
-                    ])]),
-                new Sequence(
-                [
-                    new AggressiveSearchTargetNode(),
-                    new MoveToAttackRangeNode(),
-                    new AttackNode()
-                ]),
+                new NavigationNode(),
                 new IdleNode()
             ])
         };
@@ -67,7 +79,7 @@ public class LittleHajimiBuilder : IEntityBuilder
         buffer.Set(entity, new TeamId { Value = teamId });
         buffer.Set(entity, new Selectable());
         buffer.Set(entity, behaviorTree); 
-
+        buffer.Set(entity, new Facing(Direction.South));
         // 设置战斗属性 
         buffer.Set(entity, new Health 
         { 
@@ -94,23 +106,12 @@ public class LittleHajimiBuilder : IEntityBuilder
         buffer.Set(entity, new RenderSize(new Vector2(115, 178)));
         buffer.Set(entity, new BodyCollider
         {
-            AvoidanceForce = 1.2f,
-            Offset = new Vector2(0, 80),
-            Size = new Vector2(50, 0),
+            AvoidanceForce = 100f,
+            Offset = new Vector2(0, 20),
+            Size = new Vector2(config.Size, 0),
             Type = BodyType.Circle
         });
-
-        // 渲染动画状态
-        buffer.Set(entity, new AnimationState
-        {
-            FrameDuration = idleState.FrameDuration,
-            StartFrame = idleState.StartFrame,
-            EndFrame = idleState.EndFrame,
-            IsActive = true,
-            AnimationKey = nameof(EntityType.LittleHajimi),
-            Type = AnimationStateType.Idle,
-            Offset = 0,
-            FrameTimer = 0
-        });
+        
+        buffer.Set(entity, new FlowAlgorithm(flowField, true));
     }
 }

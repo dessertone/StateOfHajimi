@@ -1,57 +1,32 @@
 ﻿{
     "GameSettings": {
-        "Units": {
+        "Entities": {
             "LittleHajimi": {
-                "MaxHp": 40,
+                "MaxHp": 80,
                 "MoveSpeed": 200.0,
                 "BuildTime": 2.0,
                 "Size": 30.0,
-                "AttackDamage": 11,
+                "AttackDamage": 15,
                 "AttackRange": 1000.0,
                 "AttackSpeed": 1.0,
                 "VisionRange": 3000
             },
-            "MidweightMechanicalCat": {
-                "MaxHp": 200,
-                "MoveSpeed": 30.0,
-                "BuildTime": 3.0,
-                "Size": 23.0,
+            "LittleHajimiFactory":
+            {
+                "MaxHp": 1000,
                 "AttackDamage": 15,
-                "AttackRange": 500.0,
+                "AttackRange": 1000.0,
                 "AttackSpeed": 1.0,
-                "VisionRange": 1000
-            },
-            "HeavyweightMechanicalCat": {
-                "MaxHp": 300,
-                "MoveSpeed": 20.0,
-                "BuildTime": 4.0,
-                "Size": 24.0,
-                "AttackDamage": 20,
-                "AttackRange": 600.0,
-                "AttackSpeed": 1.0,
-                "VisionRange": 1000
             }
         },
         "UnitAnimations": {
-            "LittleHajimiFactory_blue": {
-                "TotalFrames": 20,
+            "LittleHajimiFactory": {
+                "TotalFrames": 15,
                 "StateAnimations":
                 {
                     "Running": {
                         "StartFrame": 0,
-                        "EndFrame": 20,
-                        "FrameDuration": 0.2,
-                        "IsLoop": true
-                    }
-                }
-            },
-            "LittleHajimiFactory_red": {
-                "TotalFrames": 14,
-                "StateAnimations":
-                {
-                    "Running": {
-                        "StartFrame": 0,
-                        "EndFrame": 14,
+                        "EndFrame": 15,
                         "FrameDuration": 0.2,
                         "IsLoop": true
                     }
@@ -61,9 +36,51 @@
                 "TotalFrames": 1,
                 "StateAnimations":
                 {
-                    "Idle": {
+                    "Idle_South": {
                         "StartFrame": 0,
                         "EndFrame": 0,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_North": {
+                        "StartFrame": 1,
+                        "EndFrame": 1,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_East": {
+                        "StartFrame": 2,
+                        "EndFrame": 2,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_West": {
+                        "StartFrame": 3,
+                        "EndFrame": 3,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_SouthEast": {
+                        "StartFrame": 4,
+                        "EndFrame": 4,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_SouthWest": {
+                        "StartFrame": 5,
+                        "EndFrame": 5,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_NorthWest": {
+                        "StartFrame": 6,
+                        "EndFrame": 6,
+                        "FrameDuration": 1,
+                        "IsLoop": true
+                    },
+                    "Idle_NorthEast": {
+                        "StartFrame": 7,
+                        "EndFrame": 7,
                         "FrameDuration": 1,
                         "IsLoop": true
                     },

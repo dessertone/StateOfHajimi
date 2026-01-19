@@ -14,6 +14,7 @@
     using StateOfHajimi.Client.Rendering; 
     using StateOfHajimi.Client.Utils;
     using StateOfHajimi.Core;
+    using StateOfHajimi.Core.Utils;
 
     namespace StateOfHajimi.Client.Controls;
 
@@ -65,14 +66,8 @@
             base.OnLoaded(e);
             await AssetsManager.InitializeAsync();
             
-            
-            
-            
-            if (GameEngine.CurrentMap != null)
-            {
-                var map = GameEngine.CurrentMap;
-                _camera.Position = new Vector2(map.Width * map.TileSize / 2, map.Height * map.TileSize / 2);
-            }
+            var map = GameEngine.CurrentMap;
+            _camera.Position = new Vector2(map.Width * map.TileSize / 2, map.Height * map.TileSize / 2);
             _camera.ViewportSize = Bounds.Size;
             
             _worldRenderer = new SkiaWorldRenderer(GameEngine);
@@ -104,19 +99,13 @@
         {
             var deltaTime = (float)_gameTimer.Elapsed.TotalSeconds;
             _gameTimer.Restart();
-
-            
             _inputController.Update(deltaTime);
-
-            
+            VisualEffectManager.Instance.Update(deltaTime);
             GameEngine.Update(deltaTime);
-            
-            if (GameEngine.CurrentMap != null)
-            {
-                var mapW = GameEngine.CurrentMap.Width * GameEngine.CurrentMap.TileSize;
-                var mapH = GameEngine.CurrentMap.Height * GameEngine.CurrentMap.TileSize;
-                _camera.ClampToMap(mapW, mapH);
-            }
+
+            var mapW = GameEngine.CurrentMap.Width * GameEngine.CurrentMap.TileSize;
+            var mapH = GameEngine.CurrentMap.Height * GameEngine.CurrentMap.TileSize;
+            _camera.ClampToMap(mapW, mapH);
             InvalidateVisual();
         }
 

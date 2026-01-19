@@ -77,14 +77,14 @@ public class SpatialGrid
         var maxX = Math.Max(startPos.X, endPos.X);
         var maxY = Math.Max(startPos.Y, endPos.Y);
         
-        int startCol = (int)(minX / _cellSize);
-        int startRow = (int)(minY / _cellSize);
-        int endCol = (int)(maxX / _cellSize);
-        int endRow = (int)(maxY / _cellSize);
+        var startCol = (int)(minX / _cellSize);
+        var startRow = (int)(minY / _cellSize);
+        var endCol = (int)(maxX / _cellSize);
+        var endRow = (int)(maxY / _cellSize);
         
-        for (int col = startCol; col <= endCol; col++)
+        for (var col = startCol; col <= endCol; col++)
         {
-            for (int row = startRow; row <= endRow; row++)
+            for (var row = startRow; row <= endRow; row++)
             {
                 if (_buckets.TryGetValue((col, row), out var bucket))
                 {

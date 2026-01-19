@@ -11,9 +11,10 @@ public static class GameConfig
     private static IConfigurationRoot _configurationRoot;
     private static GameSettings _settings;
     
-    private static readonly Dictionary<EntityType, UnitStateConfig> _entityStatsCache = new();
+    private static readonly Dictionary<EntityType, EntityStateConfig> _entityStatsCache = new();
     
-    private static readonly Dictionary<string, UnitAnimationConfig> _unitAnimation = new();
+    private static readonly Dictionary<EntityType, UnitAnimationConfig> _unitAnimation = new();
+    
     
     public static void Initialize()
     {
@@ -27,7 +28,7 @@ public static class GameConfig
         Log.Information("GameSettings.json loaded");
     }
 
-    private static void OnConfigChanged(object state)
+    private static void OnConfigChanged(object? state)
     {
         Log.Information("Configuration Changed...");
         LoadSettings();
@@ -49,7 +50,7 @@ public static class GameConfig
     private static void RefreshUnitCache()
     {
         _entityStatsCache.Clear();
-        foreach (var kvp in _settings.Units)
+        foreach (var kvp in _settings.Entities)
         {
             if (Enum.TryParse<EntityType>(kvp.Key, true, out var type))
             {
@@ -61,35 +62,45 @@ public static class GameConfig
             }
         }
         _unitAnimation.Clear();
+        
         foreach (var kvp in _settings.UnitAnimations)
         {
-            _unitAnimation[kvp.Key] = kvp.Value;
+            if (Enum.TryParse<EntityType>(kvp.Key, true, out var animType))
+            {
+                _unitAnimation[animType] = kvp.Value;
+                _unitAnimation[animType].BakeCache();
+            }
+            else
+            {
+                Log.Warning($"Unknown unit animation type: {kvp.Key}");
+            }
         }
     }
 
     /// <summary>
     /// 获取指定兵种的配置数据
     /// </summary>
-    public static UnitStateConfig GetUnitState(EntityType type)
+    public static EntityStateConfig GetUnitState(EntityType type)
     {
         if (_entityStatsCache.TryGetValue(type, out var state))
         {
             return state;
         }
         Log.Error($"Unknown unit type: {type}, create default value");
-        return new UnitStateConfig { MaxHp = 1, Size = 10 };
+        return new EntityStateConfig { MaxHp = 1, Size = 10 };
     }
-
-
-    public static UnitAnimationConfig? GetUnitAnimation(string key)
+    
+    public static UnitAnimationConfig? GetUnitAnimation(EntityType key)
     {
         if (_unitAnimation.TryGetValue(key, out var animation))
         {
             return animation;
         }
-        Log.Warning($"Unknown unit animation key: {key}");
+        Log.Warning($"Unknown unit animation key: {key}, check your EntityType!");
         return null;
     }
-    public static UnitAnimationConfig? GetEntityAnimation(EntityType type) => GetUnitAnimation(type.ToString());
-    public static UnitAnimationConfig? GetBuildingAnimation(BuildingType type) => GetUnitAnimation(type.ToString());
+    public static UnitAnimationConfig? GetEntityAnimation(EntityType type) => GetUnitAnimation(type);
+    
+    
+    
 }

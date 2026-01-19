@@ -3,13 +3,17 @@
     using System.Numerics;
     using Arch.Core;
     using Avalonia;
+    using Serilog;
     using SkiaSharp;
     using StateOfHajimi.Client.Utils;
     using StateOfHajimi.Core;
     using StateOfHajimi.Core.Components.MoveComponents;
+    using StateOfHajimi.Core.Components.ProductComponents;
+    using StateOfHajimi.Core.Components.RenderComponents;
     using StateOfHajimi.Core.Components.StateComponents;
     using StateOfHajimi.Core.Components.Tags;
     using StateOfHajimi.Core.Enums;
+    using StateOfHajimi.Core.Utils;
 
     namespace StateOfHajimi.Client.Rendering;
 
@@ -23,12 +27,43 @@
     {
         private World _world => gameEngine.GameWorld;
         public bool IsDebug { get; set; } = true;
+        private static readonly SKPaint _rallyLinePaint = new()
+        {
+            Color = SKColors.Red.WithAlpha(255),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 10f,
+            PathEffect = SKPathEffect.CreateCorner(10f),
+            IsAntialias = true
+        };
+
+        private static readonly SKPaint _debugTextPaint = new()
+        {
+            Color = SKColors.White,
+            TextSize = 14,
+            IsAntialias = true,
+            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
+        };
+        private static readonly SKPaint _debugTextStroke = new()
+        {
+            Color = SKColors.Black,
+            TextSize = 14,
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 3
+        };
         private static readonly SKPaint _spritePaint = new ()
         {
             FilterQuality = SKFilterQuality.None,
             IsAntialias = false
         };
-        private static readonly SKPaint _groundPaint = new ();
+
+        private static readonly SKPaint _groundPaint = new()
+        {
+            Color = SKColors.LawnGreen,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 5,
+            IsAntialias = true
+        };
 
         private static readonly SKPaint _ColliderPaint = new()
         { 
@@ -40,21 +75,28 @@
         private static readonly SKPaint _healthBarBgPaint = new()
         {
             Color = SKColors.Black.WithAlpha(180),
-            Style = SKPaintStyle.Fill
+            
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true,
             
         };
 
         private static readonly SKPaint _healthBarFgPaint = new()
         {
             Color = SKColors.LimeGreen,
-            Style = SKPaintStyle.Fill
+            
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
         };
         private RenderItem[] _renderItems = new RenderItem[200000];
         private int count = 0;
         private static readonly RenderContext _renderContext = new ();
         private static readonly Dictionary<EntityType, string> _entityKeyCache = new();
-        private static readonly Dictionary<BuildingType, string> _buildingKeyCache = new();
 
+        private static readonly QueryDescription _factoryRallyQuery = new QueryDescription()
+            .WithAll<Position, IsSelected, AutoProduction>()
+            .WithNone<Disabled>();
+        
         private static readonly QueryDescription _renderBodyCollider = new QueryDescription()
             .WithAll<BodyCollider, Position>()
             .WithAny<EntityClass,BuildingClass>()
@@ -93,22 +135,13 @@
             _entityKeyCache[entityType] = entityType.ToString();
             return _entityKeyCache[entityType];
         }
-
-        private string GetBuildingKeyCache(BuildingType buildingType)
-        {
-            if (_buildingKeyCache.TryGetValue(buildingType, out var key))
-            {
-                return key;
-            }
-            _buildingKeyCache[buildingType] = buildingType.ToString();
-            return _buildingKeyCache[buildingType];
-        }
         
         public void Render(SKCanvas canvas, Rect bounds, float zoom, Vector2 cameraPos)
         {
             canvas.Clear(SKColor.Empty);
             count = 0;
             SetRenderContext(canvas, bounds, zoom, cameraPos);
+            
             CollectBuildings(_renderContext.Bounds);
             CollectEntities(_renderContext.Bounds);
             Array.Sort(_renderItems,0, count);
@@ -121,12 +154,16 @@
             canvas.Translate(-cameraPos.X, -cameraPos.Y);
             
             RenderMap(_renderContext);
+            RenderRallyPoints(_renderContext);
             RenderItems(_renderContext);
             RenderHealthBars(_renderContext);
+            
+            VisualEffectManager.Instance.Render(canvas);
             if (IsDebug)
             {
                 RenderColliderBox(_renderContext);
             }
+            
             canvas.RestoreToCount(saveCount);
             
             RenderScreenUI(_renderContext, bounds); 
@@ -136,29 +173,33 @@
 
         private void CollectEntities(SKRect contextBounds)
         {
-            _world.Query(in _renderEntitiesQuery, (ref Position position, ref RenderSize renderSize, ref EntityClass entityClass,ref AnimationState animationState) =>
+            _world.Query(in _renderEntitiesQuery, (ref Position position, ref RenderSize renderSize, ref EntityClass entityClass,ref AnimationState animationState, ref TeamId teamId) =>
             {
                 if (ClipView(contextBounds, renderSize, position)) return;
                 var halfW = renderSize.Value.X / 2;
                 var halfH = renderSize.Value.Y / 2;
                 var key = GetEntityKeyCache(entityClass.Type);
-                var sheet = AssetsManager.GetSheet(key);
+                var sheet = AssetsManager.GetSheet(key, teamId.Value);
+                if (sheet == null)
+                {
+                    Log.Debug(string.Format("team {0}, key {1} does not exist.", teamId.Value, entityClass.Type));
+                    return;
+                }
                 var src = sheet.GetSkRect(animationState.Offset + animationState.StartFrame);
                 var dest = new SKRect(position.Value.X - halfW, position.Value.Y - halfH, position.Value.X + halfW,  position.Value.Y + halfH);
                 if (count >= 200000) return;
                 _renderItems[count++] = new RenderItem(position.Value.Y + halfH, sheet.SkiaImage, src, dest, _spritePaint); 
             });
         }
-
         private void CollectBuildings(SKRect contextBounds)
         {
-            _world.Query(in _renderBuildingsQuery, (ref Position position, ref RenderSize renderSize, ref BuildingClass building, ref AnimationState animationState) =>
+            _world.Query(in _renderBuildingsQuery, (ref Position position, ref RenderSize renderSize, ref BuildingClass building, ref AnimationState animationState, ref TeamId teamId) =>
             {
                 if (ClipView(contextBounds, renderSize, position)) return;
                 var halfW = renderSize.Value.X / 2;
                 var halfH = renderSize.Value.Y / 2;
-                var key =  GetBuildingKeyCache(building.Type);
-                var sheet = AssetsManager.GetSheet(key);
+                var key =  GetEntityKeyCache(building.Type);
+                var sheet = AssetsManager.GetSheet(key, teamId.Value);
                 var src = sheet.GetSkRect(animationState.Offset + animationState.StartFrame);
                 var dest = new SKRect(position.Value.X - halfW, position.Value.Y - halfH, position.Value.X + halfW,  position.Value.Y + halfH);
                 if (count >= 200000) return;
@@ -205,7 +246,21 @@
         {
             
         }
-
+        private void RenderRallyPoints(RenderContext context)
+        {
+            _world.Query(in _factoryRallyQuery, (ref Position pos, ref AutoProduction prod) =>
+            {
+                if (!prod.Rally.IsSet) return;
+                if (prod.Rally.Target == Vector2.Zero) return;
+                
+                var endX = prod.Rally.Target.X;
+                var endY = prod.Rally.Target.Y;
+                
+                context.Canvas.DrawCircle(endX, endY, 40f, _rallyLinePaint);
+                context.Canvas.DrawLine(endX - 30f , endY - 30f, endX + 30f, endY + 30f, _rallyLinePaint);
+                context.Canvas.DrawLine(endX + 30f , endY - 30f, endX - 30f, endY + 30f, _rallyLinePaint);
+            });
+        }
         private void RenderItems(RenderContext context)
         {
 
@@ -214,7 +269,6 @@
                 context.Canvas.DrawImage(_renderItems[i].image, _renderItems[i].srcRect, _renderItems[i].destRect, _spritePaint);
             }
         }
-        
         private void RenderColliderBox(RenderContext context)
         {
             _world.Query(in _renderBodyCollider, (ref Position position, ref BodyCollider collider) =>
@@ -257,18 +311,20 @@
                 DrawSingleHealthBar(context.Canvas, pos.Value, size.Value, health);
             });
         }
+        
+
 
         private void DrawSingleHealthBar(SKCanvas canvas, Vector2 pos, Vector2 size, Health health)
         {
-
             var barWidth = size.X * 0.8f; 
             var barHeight = 20f;           
             var yOffset = 10f;            
             
             var left = pos.X - barWidth / 2;
             var top = pos.Y - (size.Y / 2) - yOffset - barHeight;
-            var bgRect = new SKRect(left, top, left + barWidth, top + barHeight);
-            canvas.DrawRect(bgRect, _healthBarBgPaint);
+            var bgRect = new SKRoundRect(new SKRect(left, top, left + barWidth, top + barHeight), 8f );
+            
+            canvas.DrawRoundRect(bgRect, _healthBarBgPaint);
             var healthPct = Math.Clamp((float)health.Current / health.MaxHp, 0f, 1f);
             if (healthPct < 0.3f) _healthBarFgPaint.Color = SKColors.Red;
             else if (healthPct < 0.6f) _healthBarFgPaint.Color = SKColors.Orange;
@@ -276,8 +332,8 @@
             var currentWidth = barWidth * healthPct;
             if (currentWidth > 0)
             {
-                var fgRect = new SKRect(left, top, left + currentWidth, top + barHeight);
-                canvas.DrawRect(fgRect, _healthBarFgPaint);
+                var fgRect = new SKRoundRect(new SKRect(left, top, left + currentWidth, top + barHeight), 8f);
+                canvas.DrawRoundRect(fgRect, _healthBarFgPaint);
             }
         }
         private void RenderMap(RenderContext context)
@@ -289,15 +345,19 @@
             var startY = (int)Math.Max(0, context.Bounds.Top / tileSize);
             var endX = (int)Math.Min(map.Width, context.Bounds.Right / tileSize + 1);
             var endY = (int)Math.Min(map.Height, context.Bounds.Bottom / tileSize + 1);
-            var sheet = AssetsManager.GetSheet("GroundTexture");
+            var sheet = AssetsManager.GetSheet("GroundTexture", -1);
+            var wallSheet = AssetsManager.GetSheet("CrystalCluster", -1);
             for (int y = startY; y < endY; y++)
             {
                 for (int x = startX; x < endX; x++)
                 {
                     var tileType = map.GetTile(x, y);
                     var destRect = new SKRect(x * tileSize, y * tileSize, (x + 1) * tileSize, (y + 1) * tileSize);
-                    
                     context.Canvas.DrawImage(sheet.SkiaImage,sheet.GetSkRect(0), destRect, _groundPaint);
+                    if(tileType != TileType.Grass)
+                        context.Canvas.DrawImage(wallSheet.SkiaImage,wallSheet.GetSkRect(0), destRect, _groundPaint);
+
+                    
                 }
             }
 

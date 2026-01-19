@@ -5,6 +5,7 @@ using Serilog;
 using StateOfHajimi.Core.AI.Base;
 using StateOfHajimi.Core.Components.CombatComponents;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;

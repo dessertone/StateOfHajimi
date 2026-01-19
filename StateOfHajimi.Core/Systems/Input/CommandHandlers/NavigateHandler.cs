@@ -1,10 +1,12 @@
-﻿using System.Numerics;
+﻿using System.Buffers;
+using System.Numerics;
 using Arch.Buffer;
 using Arch.Core;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.PathComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
+using StateOfHajimi.Core.Navigation;
 using StateOfHajimi.Core.Systems.Input.Commands;
 using StateOfHajimi.Core.Utils.Attributes;
 using StateOfHajimi.Core.Utils.FormationGenerators;
@@ -15,82 +17,89 @@ namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 public class NavigateHandler: ICommandHandler
 {
     private static readonly QueryDescription _queryDescription = new QueryDescription()
-        .WithAll<Position, Destination, IsSelected>()
-        .WithNone<Disabled,IsDying>();
+        .WithAll<Position, Destination, IsSelected, Selectable>()
+        .WithNone<Disabled, IsDying>();
     
-    public World GameWorld { get; } 
-
-    public void Handle(CommandBuffer buffer, GameCommand command, World world, float deltaTime)
+public void Handle(CommandBuffer buffer, GameCommand command, World world, float deltaTime)
+{
+    if (command is not NavigateCommand navigateCommand) return;
+    var units = new List<(Entity Entity, Vector2 Pos)>(64);
+    world.Query(in _queryDescription, (Entity entity, ref Position position) =>
     {
-        if (command is not NavigateCommand navigateCommand) 
-            throw new ArgumentException("command is not navigateCommand");
-        if (navigateCommand.isSelectedOld)
-        {
-            
-        }
-        var units = new List<(Entity Entity, Vector2 Pos)>();
+        units.Add((entity, position.Value));
+    });
 
-        world.Query(in _queryDescription, (Entity entity, ref Position position) =>
-        {
-            units.Add((entity, position.Value));
-        });
+    int count = units.Count;
+    if (count == 0) return;
 
-        if (units.Count == 0) return;
-        
-        var formation = FormationFactory.Get(FormationType.CenterRectangle);
-        var targetPoints = new List<Vector2>();
+    var target = navigateCommand.target;
+    var flowField = FlowFieldManager.Instance.GetFlowField(ref target);
+    if (flowField == null) return;
+    
+    var targetPoints = ArrayPool<Vector2>.Shared.Rent(count);
+    try 
+    {
+        var formation = FormationFactory.Get(FormationType.Rectangle);
         using var generator = formation.Spawn(navigateCommand.target, spacing: 70).GetEnumerator();
-        for (var i = 0; i < units.Count; i++)
+        
+        int tIdx = 0;
+        while(tIdx < count && generator.MoveNext())
         {
-            if (generator.MoveNext())
-            {
-                targetPoints.Add(generator.Current);
-            }
+            targetPoints[tIdx++] = generator.Current;
         }
         
-        var assignments = SolveGreedyAssignment(units, targetPoints);
-        foreach (var assignment in assignments)
+        var posComparer = new PositionComparer(); 
+
+        units.Sort(posComparer);
+
+        Array.Sort(targetPoints, 0, count, new Vector2Comparer());
+        for (int i = 0; i < count; i++)
         {
-            ref var currentDest =ref world.Get<Destination>(assignment.Entity);
-            buffer.Set(assignment.Entity, currentDest with{Value = assignment.TargetPos, IsActive = true});
+            var entity = units[i].Entity;
+            var targetPos = targetPoints[i];
+
+            ref var currentDest = ref world.Get<Destination>(entity);
+
+            if (currentDest.Value != targetPos || !currentDest.IsActive)
+            {
+                buffer.Set(entity, currentDest with { Value = targetPos, IsActive = true });
+            }
+            if (world.Has<FlowAlgorithm>(entity))
+            {
+                ref var flow = ref world.Get<FlowAlgorithm>(entity);
+                flow.FlowField = flowField;
+                flow.IsActive = true;
+            }
+            else
+            {
+                buffer.Add(entity, new FlowAlgorithm { FlowField = flowField, IsActive = true });
+            }
         }
     }
-
-    /// <summary>
-    /// 贪心分配
-    /// </summary>
-    private List<(Entity Entity, Vector2 TargetPos)> SolveGreedyAssignment(
-        List<(Entity Entity, Vector2 Pos)> units, 
-        List<Vector2> targets)
+    finally
     {
-        var result = new List<(Entity, Vector2)>();
-        var pairs = new List<(int uIndex, int tIndex, float distSq)>(units.Count * targets.Count);
-        for (var u = 0; u < units.Count; u++)
-        {
-            for (var t = 0; t < targets.Count; t++)
-            {
-                var d2 = Vector2.DistanceSquared(units[u].Pos, targets[t]);
-                pairs.Add((u, t, d2));
-            }
-        }
-        
-        pairs.Sort((a, b) => a.distSq.CompareTo(b.distSq));
-        
-        var usedUnits = new bool[units.Count];
-        var usedTargets = new bool[targets.Count];
-        var matchCount = 0;
-
-        foreach (var p in pairs)
-        {
-            if (matchCount >= units.Count) break;
-            if (!usedUnits[p.uIndex] && !usedTargets[p.tIndex])
-            {
-                usedUnits[p.uIndex] = true;
-                usedTargets[p.tIndex] = true;
-                result.Add((units[p.uIndex].Entity, targets[p.tIndex]));
-                matchCount++;
-            }
-        }
-        return result;
+        ArrayPool<Vector2>.Shared.Return(targetPoints);
     }
+}
+
+private struct PositionComparer : IComparer<(Entity Entity, Vector2 Pos)>
+{
+    public int Compare((Entity Entity, Vector2 Pos) a, (Entity Entity, Vector2 Pos) b)
+    {
+        // 先排 Y (行)，再排 X (列)，适合 RTS 矩形阵型
+        int yComp = a.Pos.Y.CompareTo(b.Pos.Y);
+        if (yComp != 0) return yComp;
+        return a.Pos.X.CompareTo(b.Pos.X);
+    }
+}
+
+private struct Vector2Comparer : IComparer<Vector2>
+{
+    public int Compare(Vector2 a, Vector2 b)
+    {
+        int yComp = a.Y.CompareTo(b.Y);
+        if (yComp != 0) return yComp;
+        return a.X.CompareTo(b.X);
+    }
+}
 }

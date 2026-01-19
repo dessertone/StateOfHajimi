@@ -4,6 +4,7 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Data;

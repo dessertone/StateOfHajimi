@@ -5,6 +5,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
 using Serilog;
+using StateOfHajimi.Core.Components.StateComponents;
 
 namespace StateOfHajimi.Client.Utils;
 
@@ -19,7 +20,8 @@ public static class AssetsManager
         LoadSpriteSheet("GroundTexture", "Assets/GroundTexture.jpg", 1024, 1024);
         LoadSpriteSheet("CrystalCluster", "Assets/CrystalCluster.png", 1024, 1024);
         LoadSpriteSheet("CatStatue", "Assets/CatStatue.png", 1024, 1024);
-        LoadSpriteSheet("LittleHajimi", "Assets/Entities/LittleHajimi.png", 256, 279);
+        LoadSpriteSheet("LittleHajimi_blue", "Assets/Entities/LittleHajimi.png", 256, 279);
+        LoadSpriteSheet("LittleHajimi_red", "Assets/Entities/LittleHajimi.png", 256, 279);
         
         Log.Information("Assets initialized.");
     }
@@ -58,8 +60,17 @@ public static class AssetsManager
         }
     }
 
-    public static SpriteSheet? GetSheet(string key) => _sheets.TryGetValue(key, out var s) ? s : null;
-    
+    public static SpriteSheet? GetSheet(string key, int teamId)
+    {
+        if(teamId == -1)
+            return _sheets.TryGetValue(key, out var s) ? s : null;
+        if(teamId == 0)
+            return _sheets.TryGetValue(key + "_blue", out var s0) ? s0 : null;
+        if(teamId == 1)
+            return _sheets.TryGetValue(key + "_red", out var s1) ? s1 : null;
+        return null;
+    }
+
     public static void Dispose()
     {
         foreach (var sheet in _sheets.Values)

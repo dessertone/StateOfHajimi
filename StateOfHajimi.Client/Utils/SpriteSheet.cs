@@ -25,10 +25,7 @@ public class SpriteSheet : IDisposable
         
         _columns = skiaImage.Width / frameWidth;
     }
-
-    /// <summary>
-    /// 获取 Avalonia 用的 Rect (double)
-    /// </summary>
+    
     public Rect GetTextureRect(int index)
     {
         var row = index / _columns;

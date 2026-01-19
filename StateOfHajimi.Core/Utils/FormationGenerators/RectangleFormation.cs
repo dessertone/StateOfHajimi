@@ -1,25 +1,40 @@
 ﻿using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Utils.Attributes;
 
 namespace StateOfHajimi.Core.Utils.FormationGenerators;
 
 [FormationStrategy(FormationType.Rectangle)]
-public class RectangleFormation:IFormation
+public class RectangleFormation : IFormation
 {
+    /// <summary>
+    /// 每行显示多少个单位
+    /// </summary>
+    public int Columns { get; set; } = 10;
 
-    public int RowCount { get; set; } = 10;
-    public IEnumerable<Vector2> Spawn(Vector2 center, float spacing = 20)
+    public IEnumerable<Vector2> Spawn(Vector2 center, float spacing = 100)
     {
-        var row = 0;
+        var cols = Math.Max(1, Columns);
+        var currentIndex = 0;
+
         while (true)
         {
-            for (var i = 0; i < RowCount; i++)
+            var row = currentIndex / cols;
+            var colIndex = currentIndex % cols;
+            float xOffset = 0;
+            if (colIndex > 0)
             {
-                yield return new Vector2(center.X + i * spacing, center.Y + row * spacing);
+                var pairCount = (colIndex + 1) / 2;
+                var direction = colIndex % 2 == 1 ? 1 : -1;
+                xOffset = pairCount * spacing * direction;
             }
-            row++;
+            var yOffset = row * spacing;
+            var pos = new Vector2(
+                center.X + xOffset,
+                center.Y + yOffset
+            );
+            yield return pos;
+            currentIndex++;
         }
     }
 }

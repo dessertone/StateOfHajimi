@@ -6,8 +6,9 @@ using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.ProductComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Components.Tags;
-using StateOfHajimi.Core.Data.EntityBuilders;
+using StateOfHajimi.Core.Data.Builders.Bases;
 using StateOfHajimi.Core.Enums;
+using StateOfHajimi.Core.Navigation;
 
 namespace StateOfHajimi.Core.Systems.Production;
 
@@ -20,15 +21,10 @@ public partial class AutoProductSystem:BufferBaseSystem
     public override void Initialize()
     {
         base.Initialize();
-        /*var rally = new RallyPoint { IsSet = false, Target = new Vector2(5000, 5000)};
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(6000,6000), 0,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(6000,7000), 0,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(6000,8000), 0,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(6000,9000), 0,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(7000,6000), 1,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(7000,7000), 1,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(7000,5000), 1,ref rally);
-        UnitFactory.Create(Buffer, EntityType.LittleHajimi, new Vector2(7000,4000), 1,ref rally);*/
+        var rally = new RallyPoint { IsSet = false, Target = new Vector2(5000, 5000)};
+        var context = new BuildContext(new Vector2(3000,6000),0, rally);
+        UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);
+
         
     }
 
@@ -41,7 +37,9 @@ public partial class AutoProductSystem:BufferBaseSystem
         {
             prod.Progress = 0;
             var spawnPos = pos.Value + new Vector2(0, 300);
-            UnitFactory.Create(Buffer, EntityType.LittleHajimi, spawnPos, teamId.Value, ref prod.Rally);
+            var context = new BuildContext(spawnPos, teamId.Value, prod.Rally);
+
+            UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);
         }
     }
 

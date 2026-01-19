@@ -1,7 +1,10 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using Arch.Core;
 using Arch.System;
+using Serilog;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Map;
@@ -10,21 +13,19 @@ using StateOfHajimi.Core.Utils;
 
 namespace StateOfHajimi.Core.Systems.Construction;
 
-public partial class MapLoaderSystem: BaseSystem<World,float>
+public partial class MapLoaderSystem
 {
     
     private static readonly SpatialGrid _spatialGrid = SpatialGrid.Instance;
     private readonly TileMap _tileMap;
+    private readonly World _world;
     
-    public MapLoaderSystem(World world, TileMap map) : base(world)
+    public MapLoaderSystem(World world, TileMap map) 
     {
+        _world = world;
         _tileMap = map;
     }
-
-    public override void Update(in float deltaTime)
-    {
-        LoadMap(_tileMap);
-    }
+    
     
     public void LoadMap(TileMap map)
     {
@@ -46,7 +47,7 @@ public partial class MapLoaderSystem: BaseSystem<World,float>
     {
         var pos = map.GridToWorldCenter(x, y);
         var position = new Position { Value = pos };
-        var entity = World.Create(
+        var entity = _world.Create(
             position,
             new BodyCollider 
             { 

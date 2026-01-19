@@ -2,6 +2,6 @@
 
 public enum EntityType
 {
-
-    LittleHajimi
+    LittleHajimi,
+    LittleHajimiFactory,
 }
