@@ -53,7 +53,9 @@ public abstract class InputStateBase: IInputState
     public virtual void OnPointerMoved(PointerEventArgs e)
     {
         var (pos, point) = GameView.GetRelativeInfo(e);
-        // 更新UI界面鼠标信息
+        
+        var worldPos = GameView.ScreenToWorld(pos);
+        Bridge.UpdateMousePosition(worldPos);
         GameView.MousePosition = pos;
         GameView.Pointer = point;
     }

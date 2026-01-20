@@ -157,6 +157,7 @@
         protected override void OnPointerMoved(PointerEventArgs e) 
         {
             base.OnPointerMoved(e);
+            
             _inputController.OnPointerMoved(e);
         }
         protected override void OnPointerPressed(PointerPressedEventArgs e) 
@@ -199,10 +200,7 @@
         public Point WorldToScreen(Vector2 pos) => _camera.WorldToScreen(pos);
         public (Point, PointerPoint) GetRelativeInfo(PointerEventArgs e) => (e.GetPosition(this), e.GetCurrentPoint(this));
 
-        public void SetCursor(CursorType type)
-        {
-            
-        }
+        public void SetCursor(CursorType type) => Cursor = AssetsManager.GetCursor(type) ?? AssetsManager.GetCursor(CursorType.Default);
         public void MoveCamera(Vector2 velocity) => _camera.Move(velocity);
         public void MoveCameraByPixel(Vector2 delta) => _camera.MoveCameraByPixel(delta);
         public bool ContainPoint(Point point) => Bounds.Contains(point);

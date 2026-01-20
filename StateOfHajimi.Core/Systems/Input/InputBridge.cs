@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Numerics;
+using Arch.Core;
+using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Systems.Input.Commands;
 
 namespace StateOfHajimi.Core.Systems.Input;
@@ -37,6 +39,13 @@ public class InputBridge
             _MousePosition = pos;
         }
     }
+    
+    /// <summary>
+    /// 是否悬浮在可选中物体上
+    /// </summary>
+    public bool IsHovering { get; set; }
+    public HoverType CursorHoverType { get; set; }
+    public Entity HoveredEntity { get; set; } = Entity.Null;
     
     /// <summary>
     /// 添加命令

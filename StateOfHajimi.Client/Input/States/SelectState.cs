@@ -16,16 +16,6 @@ public class SelectState: InputStateBase
         _startPos = startPos;  
     }
     
-    public override void Enter(InputController controller)
-    {
-        base.Enter(controller);
-    }
-
-    public override void Update(float deltaTime)
-    {
-        base.Update(deltaTime);
-    }
-
     public override void OnPointerPressed(PointerPressedEventArgs e)
     {
         // 没有事件

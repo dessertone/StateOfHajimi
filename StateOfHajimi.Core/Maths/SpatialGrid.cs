@@ -49,7 +49,7 @@ public class SpatialGrid
     /// <param name="pos"></param>
     /// <param name="range"></param>
     /// <returns></returns>
-    public IEnumerable<Entity> Retrieve(Vector2 pos, float range = 2000)
+    public IEnumerable<Entity> Retrieve(Vector2 pos, float range = 1000)
     {
         var (r, c) = GetCellKey(pos);
         var size = (int)(range * 2 / _cellSize + 2);

@@ -18,8 +18,8 @@ public static class CollisionResolver
         Vector2 posB, BodyCollider colB)
     {
         // Size是半长
-        Vector2 centerA = posA + colA.Offset;
-        Vector2 centerB = posB + colB.Offset;
+        var centerA = posA + colA.Offset;
+        var centerB = posB + colB.Offset;
         
         if (colA.Type == BodyType.Circle && colB.Type == BodyType.Circle)
         {

@@ -21,11 +21,9 @@ public partial class AutoProductSystem:BufferBaseSystem
     public override void Initialize()
     {
         base.Initialize();
-        var rally = new RallyPoint { IsSet = false, Target = new Vector2(5000, 5000)};
+        /*var rally = new RallyPoint { IsSet = false, Target = new Vector2(5000, 5000)};
         var context = new BuildContext(new Vector2(3000,6000),0, rally);
-        UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);
-
-        
+        UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);*/
     }
 
     [Query]
@@ -42,7 +40,5 @@ public partial class AutoProductSystem:BufferBaseSystem
             UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);
         }
     }
-
-
-
+    
 }

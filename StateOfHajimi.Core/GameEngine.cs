@@ -55,9 +55,10 @@ public class GameEngine:IDisposable
         _systems = new("systemGroup",
             // 死亡系统
             new DeathSystem(GameWorld),
-            
             // 初始化网格
             new GridBuildSystem(GameWorld), 
+            // 鼠标检测
+            new CursorDetectSystem(GameWorld, Bridge),
             // 初始化AI
             new AISystem(GameWorld),
             // 批量处理命令
@@ -78,11 +79,11 @@ public class GameEngine:IDisposable
     private void Test()
     {
         var buffer = new CommandBuffer();
-        var context = new BuildContext(new Vector2(3000, 5000), 0, new RallyPoint(new Vector2(3000, 6000), true));
+        var context = new BuildContext(new Vector2(3000, 6400), 0, new RallyPoint(new Vector2(3000, 8000), true));
         UnitFactory.CreateEntity(buffer, EntityType.LittleHajimiFactory,ref context);
-        context.Position.X = 3600;
+        context.Position.X = 5000;
         context.TeamId = 1;
-        context.ExtraData = new RallyPoint(new Vector2(3600, 6000), true);
+        context.ExtraData = new RallyPoint(new Vector2(5000, 8000), true);
         UnitFactory.CreateEntity(buffer, EntityType.LittleHajimiFactory,ref context);
         buffer.Playback(GameWorld);
     }

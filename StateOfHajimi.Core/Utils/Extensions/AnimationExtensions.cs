@@ -35,7 +35,7 @@ public static class AnimationExtensions
         }
         else
         {
-            Log.Warning($"unit {anim.AnimationTarget}'s animation type {type} facing {facing} not found!");
+            /*Log.Warning($"unit {anim.AnimationTarget}'s animation type {type} facing {facing} not found!");*/
         }
     }
 }

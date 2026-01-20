@@ -8,11 +8,13 @@
     using StateOfHajimi.Client.Utils;
     using StateOfHajimi.Core;
     using StateOfHajimi.Core.Components.MoveComponents;
+    using StateOfHajimi.Core.Components.PathComponents;
     using StateOfHajimi.Core.Components.ProductComponents;
     using StateOfHajimi.Core.Components.RenderComponents;
     using StateOfHajimi.Core.Components.StateComponents;
     using StateOfHajimi.Core.Components.Tags;
     using StateOfHajimi.Core.Enums;
+    using StateOfHajimi.Core.Maths;
     using StateOfHajimi.Core.Utils;
 
     namespace StateOfHajimi.Client.Rendering;
@@ -27,6 +29,14 @@
     {
         private World _world => gameEngine.GameWorld;
         public bool IsDebug { get; set; } = true;
+        private static readonly SKPaint _arrowPaint = new()
+        {
+            Color = SKColors.DarkSlateBlue.WithAlpha(200), // 青色，半透明
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2f,
+            IsAntialias = true,
+            StrokeCap = SKStrokeCap.Round 
+        };
         private static readonly SKPaint _rallyLinePaint = new()
         {
             Color = SKColors.Red.WithAlpha(255),
@@ -34,22 +44,6 @@
             StrokeWidth = 10f,
             PathEffect = SKPathEffect.CreateCorner(10f),
             IsAntialias = true
-        };
-
-        private static readonly SKPaint _debugTextPaint = new()
-        {
-            Color = SKColors.White,
-            TextSize = 14,
-            IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
-        };
-        private static readonly SKPaint _debugTextStroke = new()
-        {
-            Color = SKColors.Black,
-            TextSize = 14,
-            IsAntialias = true,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 3
         };
         private static readonly SKPaint _spritePaint = new ()
         {
@@ -64,7 +58,6 @@
             StrokeWidth = 5,
             IsAntialias = true
         };
-
         private static readonly SKPaint _ColliderPaint = new()
         { 
             Color = SKColors.LawnGreen,
@@ -80,7 +73,6 @@
             IsAntialias = true,
             
         };
-
         private static readonly SKPaint _healthBarFgPaint = new()
         {
             Color = SKColors.LimeGreen,
@@ -92,7 +84,9 @@
         private int count = 0;
         private static readonly RenderContext _renderContext = new ();
         private static readonly Dictionary<EntityType, string> _entityKeyCache = new();
-
+        private static readonly QueryDescription _debugFlowFieldQuery = new QueryDescription()
+            .WithAll<IsSelected, FlowAlgorithm>()
+            .WithNone<Disabled>();
         private static readonly QueryDescription _factoryRallyQuery = new QueryDescription()
             .WithAll<Position, IsSelected, AutoProduction>()
             .WithNone<Disabled>();
@@ -154,6 +148,7 @@
             canvas.Translate(-cameraPos.X, -cameraPos.Y);
             
             RenderMap(_renderContext);
+            RenderFlowField(_renderContext);
             RenderRallyPoints(_renderContext);
             RenderItems(_renderContext);
             RenderHealthBars(_renderContext);
@@ -169,7 +164,74 @@
             RenderScreenUI(_renderContext, bounds); 
             
         }
+        /// <summary>
+        /// 绘制单个箭头
+        /// </summary>
+        /// <param name="canvas">画布</param>
+        /// <param name="center">箭头中心点（格子的中心）</param>
+        /// <param name="direction">归一化的方向向量</param>
+        /// <param name="length">箭头总长度</param>
+        private void DrawArrow(SKCanvas canvas, Vector2 center, Vector2 direction, float length)
+        {
+            var halfLen = length * 0.5f;
+            var startX = center.X - direction.X * halfLen;
+            var startY = center.Y - direction.Y * halfLen;
+            var endX = center.X + direction.X * halfLen;
+            var endY = center.Y + direction.Y * halfLen;
+            canvas.DrawLine(startX, startY, endX, endY, _arrowPaint);
+            
+            var wingLen = length * 0.35f;
+            const float angleOffset = 0.5f;
 
+            var angle = MathF.Atan2(direction.Y, direction.X);
+
+            var leftAngle = angle + MathF.PI - angleOffset;
+            var leftX = endX + MathF.Cos(leftAngle) * wingLen;
+            var leftY = endY + MathF.Sin(leftAngle) * wingLen;
+
+            var rightAngle = angle - MathF.PI + angleOffset;
+            var rightX = endX + MathF.Cos(rightAngle) * wingLen;
+            var rightY = endY + MathF.Sin(rightAngle) * wingLen;
+
+            canvas.DrawLine(endX, endY, leftX, leftY, _arrowPaint);
+            canvas.DrawLine(endX, endY, rightX, rightY, _arrowPaint);
+        }
+        private void RenderFlowField(RenderContext context)
+        {
+            FlowField? activeFlowField = null;
+            _world.Query(in _debugFlowFieldQuery, (ref FlowAlgorithm flowAlgo) =>
+            {
+                if (activeFlowField == null && flowAlgo.IsActive && flowAlgo.FlowField != null)
+                {
+                    activeFlowField = flowAlgo.FlowField;
+                }
+            });
+
+            if (activeFlowField == null) return;
+            var map = gameEngine.CurrentMap;
+            var tileSize = map.TileSize;
+
+            var startX = (int)Math.Max(0, context.Bounds.Left / tileSize - 1);
+            var startY = (int)Math.Max(0, context.Bounds.Top / tileSize - 1);
+            var endX = (int)Math.Min(map.Width, context.Bounds.Right / tileSize + 2);
+            var endY = (int)Math.Min(map.Height, context.Bounds.Bottom / tileSize + 2);
+
+            for (var y = startY; y < endY; y++)
+            {
+                for (var x = startX; x < endX; x++)
+                {
+                    var centerX = x * tileSize + tileSize / 2f;
+                    var centerY = y * tileSize + tileSize / 2f;
+                    var worldPos = new Vector2(centerX, centerY);
+                    var dir = activeFlowField.GetFlowDirection(ref worldPos);
+
+                    if (dir != Vector2.Zero)
+                    {
+                        DrawArrow(context.Canvas, worldPos, dir, tileSize * 0.6f);
+                    }
+                }
+            }
+        }
 
         private void CollectEntities(SKRect contextBounds)
         {

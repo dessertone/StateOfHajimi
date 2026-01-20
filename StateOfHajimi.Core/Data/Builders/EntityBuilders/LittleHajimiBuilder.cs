@@ -16,6 +16,7 @@ using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Navigation;
 using StateOfHajimi.Core.Utils.Attributes;
+using Parallel = StateOfHajimi.Core.AI.Base.Parallel;
 
 namespace StateOfHajimi.Core.Data.Builders.EntityBuilders;
 
@@ -35,8 +36,7 @@ public class LittleHajimiBuilder : IEntityBuilder
     {
         var position = context.Position;
         var teamId = context.TeamId;
-        var data = context.ExtraData as object[];
-        var rally = data?[0] is RallyPoint r ? r : new RallyPoint{IsSet = false};
+        var rally = context.ExtraData is RallyPoint r ? r : new RallyPoint{IsSet = false};
         var flowField = rally.IsSet ? FlowFieldManager.Instance.GetFlowField(ref rally.Target) : null;
         // 准备实体数据 
         var config = GameConfig.GetUnitState(EntityType.LittleHajimi);
@@ -68,9 +68,15 @@ public class LittleHajimiBuilder : IEntityBuilder
         // 构建行为树
         var behaviorTree = new AIController
         {
-            RootNode = new Selector([
-                new NavigationNode(),
-                new IdleNode()
+            RootNode = new Parallel([
+                new Selector([
+                    new NavigationNode(),
+                    new IdleNode()        
+                ]),
+                new Sequence([
+                    new CheckTargetNode(),
+                    new AttackNode()       
+                ])
             ])
         };
 
@@ -103,10 +109,10 @@ public class LittleHajimiBuilder : IEntityBuilder
         buffer.Set(entity, new Velocity { Value = Vector2.Zero });
         buffer.Set(entity, new MoveSpeed(config.MoveSpeed));
         buffer.Set(entity, destination);
-        buffer.Set(entity, new RenderSize(new Vector2(115, 178)));
+        buffer.Set(entity, new RenderSize(new Vector2(115*0.5f,178*0.5f)));
         buffer.Set(entity, new BodyCollider
         {
-            AvoidanceForce = 100f,
+            AvoidanceForce = 40f,
             Offset = new Vector2(0, 20),
             Size = new Vector2(config.Size, 0),
             Type = BodyType.Circle

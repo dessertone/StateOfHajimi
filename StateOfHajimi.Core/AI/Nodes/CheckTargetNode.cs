@@ -17,8 +17,6 @@ public class CheckTargetNode: BehaviorNode
         if (!entity.Has<AttackTarget, CombatStats, Position, TeamId>()) return NodeStatus.Failure;
 
         ref var attackTarget = ref entity.Get<AttackTarget>();
-        if (attackTarget.Target != Entity.Null && !attackTarget.Target.Has<IsDying>() && !attackTarget.Target.Has<Disabled>()) return NodeStatus.Failure;
-        
         ref var CombatStats = ref entity.Get<CombatStats>();
         ref var position = ref entity.Get<Position>();
         ref var team = ref entity.Get<TeamId>().Value;

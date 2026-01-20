@@ -19,10 +19,11 @@ public class NavigationNode:BehaviorNode
     /// <returns></returns>
     public override NodeStatus Execute(Entity entity, float deltaTime)
     {
-        if(!entity.Has<Velocity,Destination,Position,MoveSpeed>()) return NodeStatus.Failure;
+        if(!entity.Has<Velocity,Destination,Position,MoveSpeed, BodyCollider>()) return NodeStatus.Failure;
         ref var destination = ref entity.Get<Destination>();
         ref var position =  ref entity.Get<Position>();
         ref var velocity = ref entity.Get<Velocity>();
+        ref var bodyCollider = ref entity.Get<BodyCollider>();
         var moveSpeed = entity.Get<MoveSpeed>().Value;
         if (destination.IsActive)
         {
@@ -35,8 +36,7 @@ public class NavigationNode:BehaviorNode
                 destination.IsActive = false;
                 return NodeStatus.Success;
             }
-
-            if (distance <= 300 * 300f)
+            if (distance <= 70 * 70f)
             {
                 velocity.Value = Vector2.Normalize(dir) * moveSpeed;
                 return NodeStatus.Success;
@@ -46,7 +46,8 @@ public class NavigationNode:BehaviorNode
                 ref var flowAlgorithm = ref entity.Get<FlowAlgorithm>();
                 if (flowAlgorithm.FlowField != null)
                 {
-                    var d =  flowAlgorithm.FlowField.GetFlowDirection(ref position.Value);
+                    var realPos = bodyCollider.Offset + position.Value;
+                    var d =  flowAlgorithm.FlowField.GetFlowDirection(ref realPos);
                     velocity.Value = d * moveSpeed;
                     return NodeStatus.Success;
                 }

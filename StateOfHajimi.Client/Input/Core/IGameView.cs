@@ -8,8 +8,8 @@ public enum CursorType
 {
     Default,
     Hand,
-    Cross,
-    IBeam
+    Flag,
+    Attack
 }
 
 public interface IGameView

@@ -57,11 +57,11 @@ public class LittleHajimiFactoryBuilder:IEntityBuilder
         buffer.Set(entity, new BodyCollider 
         { 
             Type = BodyType.Circle, 
-            Size = new Vector2(150, 0),
+            Size = new Vector2(95, 0),
             AvoidanceForce = 999999f, 
-            Offset = new Vector2(0, 150)
+            Offset = new Vector2(0,80)
         });
-        buffer.Set(entity, new RenderSize(new Vector2(600, 600)));
+        buffer.Set(entity, new RenderSize(new Vector2(400, 400)));
 
         
         // 行为

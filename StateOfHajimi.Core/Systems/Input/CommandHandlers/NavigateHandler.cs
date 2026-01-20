@@ -33,8 +33,7 @@ public void Handle(CommandBuffer buffer, GameCommand command, World world, float
     if (count == 0) return;
 
     var target = navigateCommand.target;
-    var flowField = FlowFieldManager.Instance.GetFlowField(ref target);
-    if (flowField == null) return;
+
     
     var targetPoints = ArrayPool<Vector2>.Shared.Rent(count);
     try 
@@ -57,7 +56,8 @@ public void Handle(CommandBuffer buffer, GameCommand command, World world, float
         {
             var entity = units[i].Entity;
             var targetPos = targetPoints[i];
-
+            var flowField = FlowFieldManager.Instance.GetFlowField(ref targetPos);
+            if (flowField == null) return;
             ref var currentDest = ref world.Get<Destination>(entity);
 
             if (currentDest.Value != targetPos || !currentDest.IsActive)
@@ -86,7 +86,6 @@ private struct PositionComparer : IComparer<(Entity Entity, Vector2 Pos)>
 {
     public int Compare((Entity Entity, Vector2 Pos) a, (Entity Entity, Vector2 Pos) b)
     {
-        // 先排 Y (行)，再排 X (列)，适合 RTS 矩形阵型
         int yComp = a.Pos.Y.CompareTo(b.Pos.Y);
         if (yComp != 0) return yComp;
         return a.Pos.X.CompareTo(b.Pos.X);
