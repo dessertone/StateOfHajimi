@@ -9,8 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**"/>
+        <Folder Include="Controls\" />
+        <Folder Include="Models\" />
         <Folder Include="Themes\" />
+        <Folder Include="Utils\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,7 +29,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\StateOfHajimi.Assets\StateOfHajimi.Assets.csproj" />
       <ProjectReference Include="..\StateOfHajimi.Core\StateOfHajimi.Core.csproj" />
+      <ProjectReference Include="..\StateOfHajimi.Engine\StateOfHajimi.Engine.csproj" />
     </ItemGroup>
 
     <ItemGroup>

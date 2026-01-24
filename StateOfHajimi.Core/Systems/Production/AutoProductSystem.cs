@@ -36,7 +36,7 @@ public partial class AutoProductSystem:BufferBaseSystem
             prod.Progress = 0;
             var spawnPos = pos.Value + new Vector2(0, 300);
             var context = new BuildContext(spawnPos, teamId.Value, prod.Rally);
-
+            var textContext = new BuildContext(spawnPos,  teamId.Value, "111", new Vector2(0,-200f), new Vector2(30,30));
             UnitFactory.CreateEntity(Buffer, EntityType.LittleHajimi, ref context);
         }
     }

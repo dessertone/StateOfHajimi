@@ -1,4 +1,4 @@
-﻿using StateOfHajimi.Core.AI.Base;
+﻿using StateOfHajimi.Core.Systems.AI.Base;
 
 namespace StateOfHajimi.Core.Components.StateComponents;
 

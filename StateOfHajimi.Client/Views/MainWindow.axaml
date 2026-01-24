@@ -3,8 +3,8 @@
         xmlns:vm="using:StateOfHajimi.Client.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:view="clr-namespace:StateOfHajimi.Engine.View;assembly=StateOfHajimi.Engine"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        xmlns:control="using:StateOfHajimi.Client.Controls"
         x:Class="StateOfHajimi.Client.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         
@@ -16,6 +16,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <control:GameCanvas/>
+    <view:GameCanvas InputController="{Binding GameController}" GameContext="{Binding GameContext}"
+                        WorldRenderer="{Binding Renderer}"/>
 
 </Window>

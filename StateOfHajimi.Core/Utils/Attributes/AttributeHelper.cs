@@ -28,7 +28,7 @@ public static class AttributeHelper
         {
             if (type.GetCustomAttribute<CommandTypeAttribute>() is { } attr)
             {
-                CommandHandlers[attr.Name] = (ICommandHandler)Activator.CreateInstance(type);
+                CommandHandlers[attr.Name] = (ICommandHandler)Activator.CreateInstance(type)!;
             }
         }
         Log.Information("CommandHandlers Registered");

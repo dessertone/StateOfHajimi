@@ -1,0 +1,53 @@
+﻿using Avalonia;
+using System;
+using Serilog;
+using StateOfHajimi.Core.Data;
+using StateOfHajimi.Core.Utils.Attributes;
+
+namespace StateOfHajimi.Editor;
+
+sealed class Program
+{
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("logs/Editor-log-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        try
+        {
+            Log.Information("Loading game settings...");
+            GameConfig.Initialize();
+            AttributeHelper.Initialize();
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Fetal error has occured, game will now exit.");
+        }
+        finally
+        {
+            Log.Information("Game exit...");
+            Log.CloseAndFlush();
+        }
+    }
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UseSkia()
+            .With(new Win32PlatformOptions
+            {
+                RenderingMode = [Win32RenderingMode.AngleEgl, Win32RenderingMode.Wgl],
+                CompositionMode = [Win32CompositionMode.WinUIComposition, Win32CompositionMode.DirectComposition]
+            })
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace();
+}

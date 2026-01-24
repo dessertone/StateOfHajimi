@@ -4,6 +4,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateOfHajimi.Core", "State
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateOfHajimi.Client", "StateOfHajimi.Client\StateOfHajimi.Client.csproj", "{316ABCA0-6920-4CB5-BE1A-DF856A389A2E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateOfHajimi.Engine", "StateOfHajimi.Engine\StateOfHajimi.Engine.csproj", "{E6244FC0-1C7C-4269-8B1B-25C96AD2FD6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateOfHajimi.Editor", "StateOfHajimi.Editor\StateOfHajimi.Editor.csproj", "{388EFB67-0DDF-4F70-8EE7-4291619E0292}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StateOfHajimi.Assets", "StateOfHajimi.Assets\StateOfHajimi.Assets.csproj", "{5FCB308B-5CCB-4791-8F2C-A291DDC6763B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +24,17 @@ Global
 		{316ABCA0-6920-4CB5-BE1A-DF856A389A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{316ABCA0-6920-4CB5-BE1A-DF856A389A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{316ABCA0-6920-4CB5-BE1A-DF856A389A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6244FC0-1C7C-4269-8B1B-25C96AD2FD6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6244FC0-1C7C-4269-8B1B-25C96AD2FD6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6244FC0-1C7C-4269-8B1B-25C96AD2FD6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6244FC0-1C7C-4269-8B1B-25C96AD2FD6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{388EFB67-0DDF-4F70-8EE7-4291619E0292}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{388EFB67-0DDF-4F70-8EE7-4291619E0292}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{388EFB67-0DDF-4F70-8EE7-4291619E0292}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{388EFB67-0DDF-4F70-8EE7-4291619E0292}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FCB308B-5CCB-4791-8F2C-A291DDC6763B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FCB308B-5CCB-4791-8F2C-A291DDC6763B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FCB308B-5CCB-4791-8F2C-A291DDC6763B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FCB308B-5CCB-4791-8F2C-A291DDC6763B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

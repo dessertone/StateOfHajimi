@@ -1,6 +1,6 @@
 ﻿using Arch.Buffer;
 using Arch.Core;
-using StateOfHajimi.Core.Systems.Input.Commands;
+using StateOfHajimi.Engine.Input.Commands;
 
 namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 

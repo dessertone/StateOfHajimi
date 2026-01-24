@@ -7,9 +7,10 @@ using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.StateComponents;
 using StateOfHajimi.Core.Enums;
-using StateOfHajimi.Core.Map;
 using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Utils;
+using StateOfHajimi.Engine.Data;
+using StateOfHajimi.Engine.Enums;
 
 namespace StateOfHajimi.Core.Systems.Construction;
 

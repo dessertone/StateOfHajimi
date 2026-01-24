@@ -3,12 +3,13 @@ using Arch.Buffer;
 using Arch.Core;
 using Arch.Core.Extensions;
 using StateOfHajimi.Core.Components.MoveComponents;
+using StateOfHajimi.Core.Components.RenderComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Maths;
-using StateOfHajimi.Core.Systems.Input.Commands;
 using StateOfHajimi.Core.Utils;
 using StateOfHajimi.Core.Utils.Attributes;
+using StateOfHajimi.Engine.Input.Commands;
 
 namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 
@@ -56,17 +57,17 @@ public class SelectHandler : ICommandHandler
             if (!IsSelectableEntity(entity)) continue;
             ref var pos = ref entity.Get<Position>();
             ref var collider = ref entity.Get<BodyCollider>();
-            if(!isSingleClick&& entity.Has<BuildingClass>()) continue;
+            ref var size = ref entity.Get<RenderSize>();
+            if(!isSingleClick && entity.Has<BuildingClass>()) continue;
             var isHit = false;
             if (isSingleClick)
             {
-                isHit = IsPointInCollider(end, pos.Value, in collider);
+                isHit = IsPointInCollider(end, pos.Value, in size);
             }
             else
             {
-
                 var selectionAABB = new AABB(searchMin, searchMax);
-                isHit = Intersects(selectionAABB, pos.Value, in collider);
+                isHit = Intersects(selectionAABB, pos.Value, in size);
             }
 
             if (isHit)
@@ -116,7 +117,7 @@ public class SelectHandler : ICommandHandler
         
         if (!bestTarget.Has<IsSelected>())
         {
-            buffer.Add<IsSelected>(bestTarget);
+            bestTarget.Add<IsSelected>();
         }
     }
 
@@ -132,7 +133,7 @@ public class SelectHandler : ICommandHandler
             {
                 if (!candidateSet.Contains(entity))
                 {
-                    buffer.Remove<IsSelected>(entity);
+                    entity.Remove<IsSelected>();
                 }
             });
         }
@@ -140,7 +141,7 @@ public class SelectHandler : ICommandHandler
         {
             if (!entity.Has<IsSelected>())
             {
-                buffer.Add<IsSelected>(entity);
+                entity.Add<IsSelected>();
             }
         }
     }
@@ -149,58 +150,45 @@ public class SelectHandler : ICommandHandler
     {
         world.Query(in _selectedQuery, (entity) =>
         {
-            buffer.Remove<IsSelected>(entity);
+            entity.Remove<IsSelected>();
         });
     }
 
     private bool IsSelectableEntity(Entity entity)
     {
         return entity.IsAlive() && 
-               entity.Has<Position>() && 
-               entity.Has<BodyCollider,Selectable>() && 
+               entity.Has<Position>() &&
+               entity.Has<BodyCollider,Selectable, RenderSize>() && 
                !entity.Has<Disabled,IsDying>();    
     }
     
     
-    private bool IsPointInCollider(Vector2 point, Vector2 pos, in BodyCollider collider)
+    private bool IsPointInCollider(Vector2 point, Vector2 center, in RenderSize size)
     {
-        Vector2 center = pos + collider.Offset;
-        if (collider.Type == BodyType.Circle)
-        {
-            return Vector2.DistanceSquared(point, center) <= (collider.Size.X * collider.Size.X);
-        }
         // AABB
-        var halfW = collider.Size.X;
-        var halfH = collider.Size.Y;
+        var halfW = size.Value.X / 2;
+        var halfH = size.Value.Y / 2;
         return point.X >= center.X - halfW && point.X <= center.X + halfW &&
                point.Y >= center.Y - halfH && point.Y <= center.Y + halfH;
     }
     
-    private bool Intersects(AABB selectionBox, Vector2 pos, in BodyCollider collider)
+    private bool Intersects(AABB selectionBox, Vector2 center, in RenderSize size)
     {
-        Vector2 center = pos + collider.Offset;
-
-        if (collider.Type == BodyType.AABB)
-        {
-            // AABB vs AABB
-            var otherMin = new Vector2(center.X - collider.Size.X, center.Y - collider.Size.Y);
-            var otherMax = new Vector2(center.X + collider.Size.X, center.Y + collider.Size.Y);
-            
-            return selectionBox.Min.X <= otherMax.X && selectionBox.Max.X >= otherMin.X &&
-                   selectionBox.Min.Y <= otherMax.Y && selectionBox.Max.Y >= otherMin.Y;
-        }
-        else if (collider.Type == BodyType.Circle)
+        
+        var otherMin = new Vector2(center.X - size.Value.X / 2, center.Y - size.Value.Y / 2);
+        var otherMax = new Vector2(center.X + size.Value.X / 2, center.Y + size.Value.Y / 2);
+        return selectionBox.Min.X <= otherMax.X && selectionBox.Max.X >= otherMin.X &&
+               selectionBox.Min.Y <= otherMax.Y && selectionBox.Max.Y >= otherMin.Y;
+        /*else if (collider.Type == BodyType.Circle)
         {
 
             var closestX = Math.Clamp(center.X, selectionBox.Min.X, selectionBox.Max.X);
             var closestY = Math.Clamp(center.Y, selectionBox.Min.Y, selectionBox.Max.Y);
-
             var distanceX = center.X - closestX;
             var distanceY = center.Y - closestY;
             var distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-
             return distanceSquared < (collider.Size.X * collider.Size.X);
-        }
+        }*/
         return false;
     }
     

@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Input;
 using Serilog;
-using StateOfHajimi.Client.Input.Core;
-using StateOfHajimi.Client.Utils;
 using StateOfHajimi.Core.Enums;
-using StateOfHajimi.Core.Systems.Input.Commands;
+using StateOfHajimi.Engine.Enums;
+using StateOfHajimi.Engine.Input;
+using StateOfHajimi.Engine.Input.Commands;
+using StateOfHajimi.Engine.Input.Core;
 
 namespace StateOfHajimi.Client.Input.States;
 
@@ -18,9 +20,8 @@ public class IdleState: InputStateBase
     private bool _isDefault;
     private Point _curPos => GameView.MousePosition;
     
-    
     private const float PanSwitchThreshold = 50f;
-    public override void Enter(InputController controller)
+    public override void Enter(IController controller)
     {
         base.Enter(controller);
         GameView.SetCursor(CursorType.Default);
@@ -57,7 +58,7 @@ public class IdleState: InputStateBase
             }
             if (Bridge.CursorHoverType == HoverType.Opponent)
             {
-                GameView.SetCursor(CursorType.Flag);
+                GameView.SetCursor(CursorType.Attack);
                 _isDefault = false;
             }
         }
@@ -69,8 +70,6 @@ public class IdleState: InputStateBase
                 _isDefault = true;
             }
         }
-
-        
         if (!_isRightMouseDown) 
         {
             return;
@@ -86,7 +85,27 @@ public class IdleState: InputStateBase
     {
         _isRightMouseDown = false;
         var pos = GameView.ScreenToWorld(_curPos);
-        Bridge.AddCommand(new NavigateCommand(pos, false, _isSelectedOld));
+        Bridge.SendCommand(new NavigateCommand(pos, false, _isSelectedOld));
         _isSelectedOld = true;
     }
+
+    public override void OnKeyDown(KeyEventArgs e)
+    {
+        var action = InputMap.GetAction(e.Key, KeyModifiers.None, HoldKeys);
+        switch (action)
+        {
+            case GameAction.ToggleDebug:
+                Log.Information("Switching Debug mode");
+                Bridge.SendCommand(new SwitchDebugCommand(true));
+                break;
+            case GameAction.ToggleFullscreen:
+                GameView.ToggleFullScreen();
+                break;
+            case GameAction.SelectRallyPoint:
+                Controller.TransitionTo(new SelectRallyState());
+                break;
+        }
+        base.OnKeyDown(e);
+    }
+    
 }

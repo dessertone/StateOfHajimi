@@ -2,8 +2,8 @@
 using System.Numerics;
 using Serilog;
 using StateOfHajimi.Core.Enums;
-using StateOfHajimi.Core.Map;
 using StateOfHajimi.Core.Maths;
+using StateOfHajimi.Engine.Data;
 
 namespace StateOfHajimi.Core.Navigation;
 

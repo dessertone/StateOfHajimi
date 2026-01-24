@@ -1,7 +1,9 @@
 ﻿using System.Numerics;
 using Avalonia;
 using Avalonia.Input;
-using StateOfHajimi.Client.Input.Core;
+using StateOfHajimi.Engine.Enums;
+using StateOfHajimi.Engine.Input;
+using StateOfHajimi.Engine.Input.Core;
 
 namespace StateOfHajimi.Client.Input.States;
 
@@ -15,6 +17,11 @@ public class PanState: InputStateBase
         _lastPos = lastPos;
     }
 
+    public override void Enter(IController controller)
+    {
+        base.Enter(controller);
+        GameView.SetCursor(CursorType.Hand);
+    }
 
     public override void Update(float deltaTime)
     {

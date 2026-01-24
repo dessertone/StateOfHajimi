@@ -1,0 +1,73 @@
+﻿using System.Numerics;
+using Avalonia.Input;
+using StateOfHajimi.Engine.View;
+
+namespace StateOfHajimi.Engine.Input.Core;
+
+public abstract class InputStateBase: IInputState
+{
+    protected IController Controller { get; private set; }
+    protected IGameView GameView => Controller.GameView;
+    protected IBridge Bridge => Controller.Bridge;
+    
+    private const float EdgeThreshold = 10f;
+    
+    public HashSet<Key> HoldKeys { get; } = new ();
+    
+    public virtual void Enter(IController controller)
+    {
+        Controller = controller;
+    }
+
+    public virtual void Exit()
+    {
+
+    }
+
+    /// <summary>
+    /// 实现相机边界移动
+    /// </summary>
+    /// <param name="deltaTime"></param>
+    public virtual void Update(float deltaTime)
+    {
+        var mousePos = GameView.MousePosition;
+        if (!GameView.ContainPoint(mousePos)) return;
+        var viewport = GameView.ViewportSize;
+        
+        // 计算移动方向
+        var movement = Vector2.Zero;
+        if (mousePos.X < viewport.X + EdgeThreshold) movement.X = -1;
+        else if (mousePos.X >viewport.X + viewport.Width - EdgeThreshold) movement.X = 1;
+        if (mousePos.Y < viewport.Y + EdgeThreshold) movement.Y = -1;
+        else if (mousePos.Y > viewport.Y + viewport.Height - EdgeThreshold) movement.Y = 1;
+
+        if (movement != Vector2.Zero)
+        {
+            GameView.MoveCamera(movement * deltaTime);
+        }
+
+    }
+
+    public abstract void OnPointerPressed(PointerPressedEventArgs e);
+
+    public virtual void OnPointerMoved(PointerEventArgs e)
+    {
+        var (pos, point) = GameView.GetRelativeInfo(e);
+        
+        var worldPos = GameView.ScreenToWorld(pos);
+        Bridge.UpdateMousePosition(worldPos);
+        GameView.MousePosition = pos;
+        GameView.Pointer = point;
+    }
+
+    public abstract void OnPointerReleased(PointerReleasedEventArgs e);
+    public virtual void OnKeyUp(KeyEventArgs e)
+    {
+        HoldKeys.Remove(e.Key);
+    }
+
+    public virtual void OnKeyDown(KeyEventArgs e)
+    {
+        HoldKeys.Add(e.Key);
+    }
+}

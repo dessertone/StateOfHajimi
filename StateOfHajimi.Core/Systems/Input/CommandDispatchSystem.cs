@@ -5,6 +5,7 @@ using Serilog;
 using StateOfHajimi.Core.Systems.Input.CommandHandlers;
 using StateOfHajimi.Core.Utils;
 using StateOfHajimi.Core.Utils.Attributes;
+using StateOfHajimi.Engine.Input;
 
 namespace StateOfHajimi.Core.Systems.Input;
 
@@ -27,7 +28,7 @@ public partial class CommandDispatchSystem:BufferBaseSystem
         var time = stop.Elapsed.TotalMilliseconds;
         if (time > 15)
         {
-            Log.Warning($"LAG DETECTED! LOGIC TOOK: {time} ms");
+            Log.Warning($"[CommandDispatchSystem]LAG DETECTED! LOGIC TOOK: {time} ms");
         }
     }
 }

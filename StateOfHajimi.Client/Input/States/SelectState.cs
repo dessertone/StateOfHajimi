@@ -1,8 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Input;
 using Serilog;
-using StateOfHajimi.Client.Input.Core;
-using StateOfHajimi.Core.Systems.Input.Commands;
+using StateOfHajimi.Engine.Input.Commands;
+using StateOfHajimi.Engine.Input.Core;
 
 namespace StateOfHajimi.Client.Input.States;
 
@@ -18,7 +18,6 @@ public class SelectState: InputStateBase
     
     public override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        // 没有事件
         GameView.NotifyDrawSelection(_startPos, _curPos, false);
         Controller.TransitionTo(new IdleState());
     }
@@ -37,7 +36,7 @@ public class SelectState: InputStateBase
             var startWorld = GameView.ScreenToWorld(_startPos);
             var endWorld = GameView.ScreenToWorld(_curPos);
             
-            Bridge.AddCommand(new SelectCommand(startWorld, endWorld, false));
+            Bridge.SendCommand(new SelectCommand(startWorld, endWorld, false));
             GameView.NotifyDrawSelection(_startPos, _curPos, false);
             Controller.TransitionTo(new IdleState());
         }

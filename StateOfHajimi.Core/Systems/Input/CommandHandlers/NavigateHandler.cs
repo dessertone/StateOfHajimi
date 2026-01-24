@@ -7,9 +7,9 @@ using StateOfHajimi.Core.Components.PathComponents;
 using StateOfHajimi.Core.Components.Tags;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Navigation;
-using StateOfHajimi.Core.Systems.Input.Commands;
 using StateOfHajimi.Core.Utils.Attributes;
 using StateOfHajimi.Core.Utils.FormationGenerators;
+using StateOfHajimi.Engine.Input.Commands;
 
 namespace StateOfHajimi.Core.Systems.Input.CommandHandlers;
 

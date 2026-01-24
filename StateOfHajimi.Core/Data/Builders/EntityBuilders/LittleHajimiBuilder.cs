@@ -1,8 +1,6 @@
 ﻿using System.Numerics;
 using Arch.Buffer;
 using Arch.Core;
-using StateOfHajimi.Core.AI.Base;
-using StateOfHajimi.Core.AI.Nodes;
 using StateOfHajimi.Core.Components.CombatComponents;
 using StateOfHajimi.Core.Components.MoveComponents;
 using StateOfHajimi.Core.Components.PathComponents;
@@ -15,8 +13,10 @@ using StateOfHajimi.Core.Data.Config;
 using StateOfHajimi.Core.Enums;
 using StateOfHajimi.Core.Maths;
 using StateOfHajimi.Core.Navigation;
+using StateOfHajimi.Core.Systems.AI.Base;
+using StateOfHajimi.Core.Systems.AI.Nodes;
 using StateOfHajimi.Core.Utils.Attributes;
-using Parallel = StateOfHajimi.Core.AI.Base.Parallel;
+using Parallel = StateOfHajimi.Core.Systems.AI.Base.Parallel;
 
 namespace StateOfHajimi.Core.Data.Builders.EntityBuilders;
 
@@ -36,7 +36,7 @@ public class LittleHajimiBuilder : IEntityBuilder
     {
         var position = context.Position;
         var teamId = context.TeamId;
-        var rally = context.ExtraData is RallyPoint r ? r : new RallyPoint{IsSet = false};
+        var rally = context.ExtraData?[0] is RallyPoint r ? r : new RallyPoint{IsSet = false};
         var flowField = rally.IsSet ? FlowFieldManager.Instance.GetFlowField(ref rally.Target) : null;
         // 准备实体数据 
         var config = GameConfig.GetUnitState(EntityType.LittleHajimi);

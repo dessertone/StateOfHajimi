@@ -38,7 +38,7 @@ public class LittleHajimiFactoryBuilder:IEntityBuilder
                 IsActive = true
             });
         }
-        var rally = context.ExtraData is RallyPoint r ? r : new RallyPoint{IsSet = false};
+        var rally = context.ExtraData?[0] is RallyPoint r ? r : new RallyPoint{IsSet = false};
         
         // 属性
         buffer.Set(entity, new Position(context.Position));

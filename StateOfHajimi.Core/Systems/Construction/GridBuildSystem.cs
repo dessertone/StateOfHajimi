@@ -21,7 +21,7 @@ public partial class GridBuildSystem: BaseSystem<World, float>
     {
         _spatialGrid.Add(entity, pos.Value);
     }
-
+    
     public override void BeforeUpdate(in float t)
     {
         base.BeforeUpdate(in t);

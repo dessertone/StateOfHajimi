@@ -18,4 +18,13 @@
       <PackageReference Include="SkiaSharp" Version="2.88.9" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Contexts\Editor\" />
+      <Folder Include="Map\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\StateOfHajimi.Engine\StateOfHajimi.Engine.csproj" />
+    </ItemGroup>
+
 </Project>
